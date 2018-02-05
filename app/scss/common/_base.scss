@@ -23,7 +23,16 @@ main, nav, footer, header {
   height: 4.4em;
 }
 .main-content-header {
-  padding: 1em 0;
+  padding: 1em 0 2em;
+  &:after {
+    content: '';
+    clear: both;
+    display: block;
+  }
+  .version {
+    line-height: 1em;
+    margin-top: -1em;
+  }
 }
 .text-right {
   text-align: right;
@@ -48,4 +57,13 @@ main, nav, footer, header {
 }
 .text-center {
   text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.float-right {
+  float: right;
+}
+.float-left {
+  float: left;
 }

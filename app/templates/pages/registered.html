@@ -20,7 +20,7 @@
                     </th>
                     <th>
                         <div>
-                            <span>Start date/time</span>
+                            <span>Invoke date/time</span>
                         </div>
                     </th>
                     <th>
@@ -38,6 +38,7 @@
                             <span>Registered</span>
                         </div>
                     </th>
+                    <th>&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody class="joule-invoke-contracts_table__body">
@@ -59,10 +60,19 @@
                     <td>
                         <span style="white-space: pre">{{contract.blockHashInfo.timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
                     </td>
+                    <td>
+                        <span>
+                            <button ng-click="unregisterContract(contract)">Unregister</button>
+                        </span>
+                    </td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
+    <br/><br/>
+    <a ui-sref="main.registration" class="btn submit-btn" type="submit">
+        <span>Register a contract</span>
+    </a>
 
 </div>

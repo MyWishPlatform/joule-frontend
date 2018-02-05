@@ -1,4 +1,4 @@
-angular.module('app').controller('registeredController', function($scope, walletsList, jouleService) {
+angular.module('app').controller('registeredController', function($scope, walletsList, jouleService, JOULE_ABI) {
 
     $scope.pageContent = {
         wallets: [{
@@ -28,6 +28,7 @@ angular.module('app').controller('registeredController', function($scope, wallet
 
     var getRegisteredContracts = function() {
         jouleService.getRegisteredContracts($scope.selectedWallet.wallet).then(function(response) {
+            console.log(response);
             if (response.error) {
                 $scope.contractsList = [];
                 return;
@@ -38,9 +39,13 @@ angular.module('app').controller('registeredController', function($scope, wallet
                 });
             });
             $scope.contractsList = response.result;
-            console.log(response);
         });
     };
     getRegisteredContracts();
+
+    $scope.unregisterContract = function(contract) {
+        jouleService.unregisterContract(contract);
+        console.log(contract);
+    };
 
 });

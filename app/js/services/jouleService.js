@@ -1,4 +1,4 @@
-angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI) {
+angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI, $rootScope) {
     var web3 = new Web3(), contract, _this = this;
 
 
@@ -96,7 +96,15 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         contract = new web3.eth.Contract(JOULE_ABI);
         contract.options.address = JOULE_SETTINGS.JOULE.JOULE_ADDRESS;
         contract.methods.getVersion().call(function(error, result) {
-            console.log(result);
+            var versionBytes = web3.utils.hexToBytes(result);
+            $rootScope.version = {
+                version: web3.utils.hexToNumberString(web3.utils.bytesToHex([versionBytes[0]])),
+                minor: web3.utils.hexToNumberString(web3.utils.bytesToHex([versionBytes[1]])),
+                build: web3.utils.bytesToHex([versionBytes[2], versionBytes[3]]),
+                gitHash: web3.utils.bytesToHex([versionBytes[4], versionBytes[5], versionBytes[6], versionBytes[7]])
+            };
+            $rootScope.$apply();
+            console.log($rootScope.version);
         });
         // web3.eth.getBlock("pending", function(error, result) {
         //     console.log('error:', error);
@@ -264,6 +272,35 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         var defer = $q.defer();
         web3.eth.getBlock(blockHash).then(function(data) {
             defer.resolve(data);
+        });
+        return defer.promise;
+    };
+
+    this.unregisterContract = function(contractModel) {
+        var defer = $q.defer();
+        contract.methods.findKey(
+            contractModel.returnValues._address,
+            contractModel.returnValues._timestamp,
+            contractModel.returnValues._gasLimit,
+            contractModel.returnValues._gasPrice).call(function(error, value) {
+                if (error) {
+                    defer.resolve({
+                        error: error
+                    });
+                    return;
+                }
+
+                contract.methods.unregister(
+                    value,
+                    contractModel.returnValues._address,
+                    contractModel.returnValues._timestamp,
+                    contractModel.returnValues._gasLimit,
+                    contractModel.returnValues._gasPrice
+                ).send({
+                    from: contractModel.returnValues._registrant
+                }, function() {
+                    console.log(arguments);
+                });
         });
         return defer.promise;
     };
