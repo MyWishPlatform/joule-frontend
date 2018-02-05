@@ -1,0 +1,245 @@
+<form class="joule-invoke" name="contractRegistrationForm" ng-submit="registerContract()">
+
+    <div ng-select
+         class="joule-invoke-wallet-select"
+         ng-model="selectedWallet"
+         ng-select-change="onSelectWallet"
+         ng-model-list="pageContent.wallets"
+         ng-select-options="{class: 'select-1', label: 'wallet', icon: 'type', iconPath: '/static/images/web3-clients/'}"></div>
+
+
+    <div ng-if="selectedWallet.balance" class="joule-invoke-wallet-balance">
+        <b>Balance: </b>{{selectedWallet.balance}} ETH
+    </div>
+
+
+    <div class="base-rounded-section base-padding-section">
+        <div class="grid-row">
+            <div class="grid-cell grid-cell-2-3">
+                <div class="form-control">
+                    <label class="form-control-label">Contract address:</label>
+                    <input type="text"
+                           name="contract_name"
+                           ng-pattern="/^0x[0-9a-f]{40}$/i"
+                           ng-model="contract.address"
+                           ng-change="checkEstimateGas()"
+                           class="text-field" required>
+
+                    <span class="field-error" ng-if="addressIsError">Контракт не найден</span>
+                </div>
+            </div>
+        </div><br/>
+
+        <div ng-class="{'no-active': !checkContractAddress}">
+            <div class="grid-row">
+                <div class="grid-cell grid-cell-2-3">
+                    <div class="grid-row">
+                        <div class="grid-cell grid-cell-1-2">
+                            <label class="form-control-label">Gas limit:</label>
+                            <input type="text"
+                                   ng-disabled="!checkContractAddress"
+                                   commaseparator="{regexp: '^[1-9][0-9]*$', min: 0, max: 4000000}"
+                                   ng-model="contract.gasLimit"
+                                   ng-change="checkRegistrationAmount()"
+                                   class="text-field">
+                        </div>
+                        <div class="grid-cell grid-cell-1-2">
+                            <label class="form-control-label">Gas price (GWei):</label>
+                            <input type="text"
+                                   ng-change="checkRegistrationAmount()"
+                                   ng-disabled="!checkContractAddress"
+                                   ng-model="contract.gasPrice"
+                                   commaseparator="{regexp: '^[1-9][0-9]*$', min: 30, max: web3Utils.fromWei(web3Utils.toWei('4', 'ether'), 'gwei')}"
+                                   class="text-field">
+                        </div>
+                    </div>
+                </div>
+            </div><br/>
+            <div class="grid-row">
+                <div class="grid-cell grid-cell-1-3 grid-cell-ps-2-5 grid-cell-ls-1-2 grid-cell-vs-1">
+                    <div class="form-control">
+                        <label for="startDateTime" class="form-control-label" ng-if="!contract.multiple">
+                            Call date/time&nbsp;&nbsp;&nbsp;&nbsp;<span class="form-control-label-grey-text">UTC{{currentTimezone}}</span>
+                        </label>
+
+                        <label for="startDateTime" class="form-control-label" ng-if="contract.multiple">
+                            Date/time of the first call&nbsp;&nbsp;&nbsp;&nbsp;<span class="form-control-label-grey-text">UTC{{currentTimezone}}</span>
+                        </label>
+
+                        <input class="input-for-group-fields"
+                               readonly
+                               ng-disabled="!checkContractAddress"
+                               name="checkStartDate"
+                               ng-model="contract.start_date_time"
+                               tabindex="-1"
+                               type="number"
+                               ng-attr-max="{{maxStartDate.format('X')}}"
+                               ng-attr-min="{{minStartDate.format('X')}}"/>
+
+                        <input type="datetime" required
+                               id="startDateTime"
+                               ng-disabled="!checkContractAddress"
+                               ng-model="startDateTime.date"
+                               date-change="onChangeStartDate"
+                               auto-close="true"
+                               min-date="minStartDate"
+                               max-date="maxStartDate"
+                               readonly
+                               date-time
+                               min-view="date"
+                               view="year"
+                               format="YYYY-MM-DD"
+                               position="fixed"
+                               ng-attr-invalid="{{!contractRegistrationForm.checkStartDate.$valid}}"
+                               ng-change="onChangeStartDate"
+                               class="text-field text-field-date"/>
+                    </div>
+                </div>
+                <div class="grid-cell grid-cell-1-3 grid-cell-ps-2-5 grid-cell-ls-1-2 grid-cell-vs-1">
+                    <div class="form-control">
+                        <label class="form-control-label hide-vs">&nbsp;</label>
+                        <div class="text-field"
+                             ng-disabled="!checkContractAddress"
+                             ng-model="startDateTime.time" ng-time-picker
+                             ng-attr-invalid="{{!contractRegistrationForm.checkStartDate.$valid}}"
+                             ng-change="onChangeStartTime">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="grid-cell grid-cell-1-3 form-control-description grid-cell-ps-4-5 grid-cell-ls-1">
+                    <label class="form-control-label hide-ps">&nbsp;</label>
+                    <span class="form-control-description__text">Start date/time for sale. No contributions will be accepted before that time</span>
+                </div>
+            </div><br/>
+            <!-- div class="grid-row">
+                <div class="grid-cell grid-cell-1-4 grid-cell-ps-1-3 grid-cell-ls-1-2">
+                    <div class="form-control">
+                        <div class="checkbox-decoration">
+                            <label class="form-control-label inline-label">
+                                Multiple calls:
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-cell grid-cell-1-6 grid-cell-ps-2-5 grid-cell-ls-1-2">
+                    <div class="form-control">
+                        <label class="checkbox-decoration">
+                            <input type="checkbox"
+                                   ng-disabled="!checkContractAddress"
+                                   ng-model="contract.multiple"/>
+                            <span class="checkbox-decoration-displaying">
+                                <span class="checkbox-decoration-val checkbox-decoration-val_on">Yes</span>
+                                <span class="checkbox-decoration-val checkbox-decoration-val_off">No</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="grid-cell grid-cell-1-2 form-control-description grid-cell-ps-4-5 grid-cell-vs-1">
+                    <span class="form-control-description__text">Если включено, то контракт будет вызываться через каждый интервал времени</span>
+                </div>
+            </div -->
+            <!-- div class="grid-row" ng-if="contract.multiple">
+                <div class="grid-cell grid-cell-2-3 grid-cell-vs-1">
+                    <div class="grid-row">
+                        <div class="grid-cell grid-cell-1-2 grid-cell-vs-1">
+                            <div class="form-control">
+                                <label class="form-control-label">Check every</label>
+                                <div class="form-controls-group">
+                                    <div class="form-control-little">
+                                        <input type="text"
+                                               maxlength="3"
+                                               required
+                                               ng-disabled="!checkContractAddress"
+                                               ng-model="contract.checkPeriod"
+                                               ng-pattern="/^[1-9]+[0-9]*?$/"
+                                               ng-change="checkRegistrations()"
+                                               class="text-field text-center"/>
+                                    </div>
+                                    <div class="form-control">
+                                        <div ng-select
+                                             ng-disabled="!checkContractAddress"
+                                             ng-model="contract.checkPeriodSelect"
+                                             ng-model-list="durationList"
+                                             ng-select-change="checkRegistrations"
+                                             ng-select-options="{class: 'select-1', label: 'name', value: 'value'}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-cell grid-cell-1"><br/>
+                    <div class="grid-row">
+                        <div class="grid-cell grid-cell-1-3 grid-cell-ps-2-5 grid-cell-ls-1-2 grid-cell-vs-1">
+                            <div class="form-control">
+                                <label class="form-control-label">
+                                    Due date/time&nbsp;&nbsp;&nbsp;&nbsp;<span class="form-control-label-grey-text">UTC{{currentTimezone}}</span>
+                                </label>
+
+                                <input class="input-for-group-fields"
+                                       readonly
+                                       ng-disabled="!checkContractAddress"
+                                       name="checkDueDate"
+                                       ng-model="contract.due_date_time"
+                                       tabindex="-1"
+                                       type="number"
+                                       ng-attr-max="{{maxStartDate.format('X')}}"
+                                       ng-attr-min="{{contract.start_date_time + contract.checkPeriod * contract.checkPeriodSelect * 3600}}"/>
+
+                                <input type="datetime" required
+                                       id="dueDateTime"
+                                       ng-disabled="!checkContractAddress"
+                                       ng-model="dueDateTime.date"
+                                       date-change="onChangeStartDate"
+                                       auto-close="true"
+                                       min-date="minStartDate"
+                                       max-date="maxStartDate"
+                                       readonly
+                                       date-time
+                                       min-view="date"
+                                       view="year"
+                                       format="YYYY-MM-DD"
+                                       position="fixed"
+                                       ng-attr-invalid="{{!contractRegistrationForm.checkDueDate.$valid}}"
+                                       ng-change="onChangeDueDate"
+                                       class="text-field text-field-date"/>
+                            </div>
+                        </div>
+                        <div class="grid-cell grid-cell-1-3 grid-cell-ps-2-5 grid-cell-ls-1-2 grid-cell-vs-1">
+                            <div class="form-control">
+                                <label class="form-control-label hide-vs">&nbsp;</label>
+                                <div class="text-field"
+                                     ng-disabled="!checkContractAddress"
+                                     ng-model="dueDateTime.time" ng-time-picker
+                                     ng-attr-invalid="{{!contractRegistrationForm.checkDueDate.$valid}}"
+                                     ng-change="onChangeDueTime">&nbsp;</div>
+                            </div>
+                        </div>
+                        <div class="grid-cell grid-cell-1-3 form-control-description grid-cell-ps-4-5 grid-cell-ls-1">
+                            <label class="form-control-label hide-ps">&nbsp;</label>
+                            <span class="form-control-description__text">Start date/time for sale. No contributions will be accepted before that time</span>
+                        </div>
+                    </div>
+                </div>
+            </div -->
+        </div>
+    </div>
+    <br/>
+    <span ng-if="checkRegistrationInfo" class="joule-invoke-warning_text">
+        Стоимость регистрации контракта {{checkRegistrationInfo.amount}} ETH
+    </span>
+
+    <div><br/>
+        <button class="btn submit-btn" type="submit" ng-disabled="!checkContractAddress || !contractRegistrationForm.$valid" ng-if="selectedWallet.type !== 'infura'">
+            <span>Registration</span>
+        </button>
+        <a ng-attr-href="{{
+            'https://www.myetherwallet.com/?data=' + registerSignature +
+            '&value='+ checkRegistrationInfo.amount +'&to=' + contractAddress +
+            '&gaslimit=' + contract.gasLimit + '#send-transaction'
+        }}" target="_blank"
+           class="btn submit-btn" ng-disabled="!checkContractAddress || !contractRegistrationForm.$valid" ng-if="selectedWallet.type === 'infura'">
+            <span>Registration</span>
+        </a>
+    </div>
+</form>
+

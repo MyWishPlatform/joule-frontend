@@ -1,0 +1,120 @@
+.joule-invoke {
+  width: 100%;
+  max-width: 80em;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2em 0 5em;
+  &-wallet-select {
+    margin-bottom: 1.4em;
+  }
+  &-wallet-balance {
+    font-size: 1.4em;
+    margin-bottom: 1em;
+  }
+  .joule-invoke-contracts {
+    &_container {
+      background-color: #fff;
+      border-radius: 0.6em;
+      box-shadow: 0 1em 3em rgba(0, 0, 0, 0.25);
+    }
+    &_table {
+      border-spacing: 0;
+      width: 100%;
+      &__head {
+        box-shadow: 0 1em 3em rgba(0, 0, 0, 0.25);
+        border-radius: 0.6em;
+        position: relative;
+        z-index: 2;
+        th {
+          font-weight: normal;
+          color: #878787;
+          text-align: left;
+          div {
+            white-space: nowrap;
+            line-height: 2.4em;
+            padding: 1em 1.5em;
+            background-color: #fff;
+            span {
+              font-size: 1.4em;
+            }
+          }
+          &:first-child {
+            div {
+              border-top-left-radius: 0.6em;
+              border-bottom-left-radius: 0.6em;
+            }
+          }
+          &:last-child {
+            div {
+              border-top-right-radius: 0.6em;
+              border-bottom-right-radius: 0.6em;
+            }
+          }
+        }
+      }
+
+      &__body {
+        tr {
+          &:first-child {
+            td {
+              padding-top: 2em;
+            }
+          }
+          &:last-child {
+            td {
+              padding-bottom: 2em;
+            }
+          }
+        }
+        td {
+          color: #000;
+          white-space: nowrap;
+          line-height: 2.4em;
+          padding: 1em 1.5em;
+          a, span {
+            font-size: 1.4em;
+          }
+          a {
+            &.contract-address {
+              display: block;
+              color: #000;
+              max-width: 10em;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+          &.reward-cell {
+            border-left: 1px solid #D1D1D1;
+          }
+        }
+      }
+      th, td {
+        vertical-align: top;
+        &.reward-cell {
+          color: #0B5DFF;
+        }
+      }
+    }
+  }
+  &-warning {
+    color: #fff;
+    margin: 2em 0;
+    &_icon, &_text {
+      vertical-align: middle;
+    }
+    &_text {
+      font-size: 1.2em;
+    }
+    &_icon {
+      margin-right: 0.5em;
+      width: 1.5em;
+      height: 1.5em;
+    }
+  }
+}
+.soon-ready-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 5px;
+}

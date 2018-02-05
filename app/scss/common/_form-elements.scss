@@ -1,0 +1,280 @@
+.form-control-label {
+  display: block;
+  font-size: 1.5em;
+  line-height: 1.2em;
+  padding: 0.4em 0;
+  text-shadow: 0 1px 0 #fff;
+  &.inline-label {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  &-icon {
+    color: $main-blue-color;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 1.2em;
+    margin-top: -0.1em;
+    width: 1.4em;
+  }
+  &-grey-text {
+    color: #878787;
+  }
+}
+
+.form-control-little {
+  float: left;
+  width: 6em;
+  + .form-control {
+    margin-left: 8em;
+  }
+}
+
+.field-error {
+  color: #f91c1c;
+  font-size: 1.2em;
+  padding: 0.5em 0;
+  display: block;
+}
+
+.text-field {
+  box-sizing: border-box;
+  border: 1px solid #C2C2C2;
+  background: #fff;
+  font-size: 1.5em;
+  line-height: 2em;
+  color: #000;
+  padding: 0.5em 1em;
+  margin-top: 0.2em;
+  border-radius: 0.5em;
+  outline: none;
+  font-family: inherit;
+  &.with-currency {
+    padding-right: 3.5em;
+  }
+  &.small-input {
+    margin-top: 0;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+    line-height: 1.95em;
+  }
+  &:disabled, &[disabled] {
+    background-color: #f0f0f0;
+  }
+  &:not(&_short) {
+    width: 100%;
+  }
+
+  &-date {
+    background-image: url(images/icons/calendar.svg);
+    background-repeat: no-repeat;
+    background-position: calc(100% - 1em) center;
+  }
+  &.ng-time-picker-container {
+    background-image: url(images/icons/clock.svg);
+    background-repeat: no-repeat;
+    background-position: calc(100% - 1em) center;
+  }
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition: box-shadow linear 0.1s;
+  &:focus {
+    box-shadow: 0 0 0.2em rgba(32, 110, 255, 0.4);
+    border-color: $main-blue-color;
+  }
+  &[readonly="readonly"] {
+    background-color: transparent;
+  }
+  &::-webkit-input-placeholder {color:#999;}
+  &::-moz-placeholder          {color:#999;}/* Firefox 19+ */
+  &:-moz-placeholder           {color:#999;}/* Firefox 18- */
+  &:-ms-input-placeholder      {color:#999;}
+
+  form.ng-submitted &.ng-invalid, &.ng-invalid:focus, &.ng-touched.ng-invalid, &[invalid="true"] {
+    &:not(:disabled), &:not([disabled]) {
+      border-color: #f91c1c;
+    }
+    &:focus {
+      box-shadow: 0 0 0.2em rgba(249, 28, 28, 0.4);
+    }
+    ~ {
+      .field-label {
+        //color: #ffa2a8;
+      }
+    }
+    ~ .field-advanced-description {
+      display: none;
+    }
+
+    &.ng-invalid-required {
+      ~ .form-field_error-required {
+        display: block;
+        ~ .field-error {
+          display: none;
+        }
+      }
+    }
+    &.ng-invalid-email {
+      ~ {
+        .form-field_error-email {
+          display: block;
+          ~ .field-error {
+            display: none;
+          }
+        }
+      }
+    }
+    &.ng-invalid-pattern {
+      ~ {
+        .form-field_error-pattern {
+          display: block;
+          ~ .field-error {
+            display: none;
+          }
+        }
+      }
+    }
+    &.ng-invalid-minlength {
+      ~ {
+        .form-field_error-minlength {
+          display: block;
+          ~ .field-error {
+            display: none;
+          }
+        }
+      }
+    }
+
+    &.ng-invalid-server {
+      ~ {
+        .form-field_error-server {
+          display: block;
+          ~ .field-error {
+            display: none;
+          }
+        }
+      }
+    }
+    &.ng-invalid-soft-cap {
+      ~ {
+        .form-field_error-soft-cap {
+          display: block;
+          ~ .field-error {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+.input-for-group-fields {
+  width: 0;
+  height: 0;
+  border: 0 none;
+  padding: 0;
+  background: none;
+  outline: none;
+  position: absolute;
+}
+.text-field-warning {
+  font-size: 1.2em;
+}
+
+.checkbox-decoration {
+  cursor: pointer;
+  margin: 1.03em 0 0.9em;
+  display: inline-block;
+  position: relative;
+  user-select: none;
+  &-val {
+    color: #fff;
+    position: absolute;
+    font-size: 1.3em;
+    line-height: 1em;
+    top: 50%;
+    margin-top: -0.5em;
+    text-transform: uppercase;
+    text-align: center;
+    transition: opacity 0.1s linear;
+    z-index: 2;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.1);
+    &_on {
+      right: 0.2em;
+      left: 2em;
+      opacity: 0;
+      input:checked ~ .checkbox-decoration-displaying & {
+        opacity: 1;
+      }
+    }
+    &_off {
+      left: 0.2em;
+      right: 2em;
+      opacity: 1;
+      input:checked ~ .checkbox-decoration-displaying & {
+        opacity: 0;
+      }
+    }
+  }
+  &-displaying {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    overflow: hidden;
+    height: 2.9em;
+    width: 7em;
+    border-radius: 1.45em;
+    box-sizing: border-box;
+    background-color: #c2c2c2;
+    transition: all 0.1s linear;
+    input:checked ~ & {
+      background-color: #206eff;
+    }
+    &:after {
+      content: '';
+      width: 2.1em;
+      height: 2.1em;
+      display: block;
+      position: relative;
+      top: 50%;
+      left: 100%;
+      margin-left: -2.6em;
+      margin-top: -1.05em;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: all 0.1s linear;
+      input:checked ~ & {
+        left: 0;
+        margin-left: 0.5em;
+      }
+    }
+  }
+  input {
+    position: absolute;
+    outline: none;
+    right: 100%;
+    bottom: 100%;
+    margin: 0;
+    opacity: 0;
+  }
+}
+.form-control-description {
+  text-shadow: 0 1px 0 #fff;
+  padding-top: 0.3em;
+  &:not(.one-line) {
+    line-height: 4.7em;
+  }
+  &.one-line {
+    &:not(.without-padding) {
+      padding: 0.5em 0;
+    }
+  }
+  &.form-control-description_two-row {
+    line-height: 9.5em;
+  }
+  &__text {
+    font-size: 1.1em;
+    color: #878787;
+    display: inline-block;
+    line-height: 1.2em;
+    vertical-align: middle;
+  }
+}

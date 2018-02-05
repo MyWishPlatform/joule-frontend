@@ -1,0 +1,122 @@
+<form ng-submit="sendTransaction()" class="joule-invoke" name="invokeContractForm">
+
+    <div ng-select
+         class="joule-invoke-wallet-select"
+         ng-model="selectedWallet"
+         ng-select-change="onSelectWallet"
+         ng-model-list="pageContent.wallets"
+         ng-select-options="{class: 'select-1', label: 'wallet', icon: 'type', iconPath: '/static/images/web3-clients/'}"></div>
+
+
+    <div ng-if="selectedWallet.balance" class="joule-invoke-wallet-balance">
+        <b>Balance: </b>{{selectedWallet.balance}} ETH
+    </div>
+
+    <div class="joule-invoke-contracts_container">
+        <div class="joule-invoke-contracts">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="joule-invoke-contracts_table">
+                <thead class="joule-invoke-contracts_table__head">
+                <tr>
+                    <th>
+                        <div>
+                            <span>Contract address</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Start date/time</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Gas limit</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Gas price (GWei)</span>
+                        </div>
+                    </th>
+                    <th ng-if="isReadyContract" class="reward-cell">
+                        <div>
+                            <span>Reward (ETH)</span>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="joule-invoke-contracts_table__body">
+                <tr ng-repeat="contract in contractsInfo.data">
+                    <td>
+                        <a class="contract-address"
+                           target="blank"
+                           ng-attr-href="https://ropsten.etherscan.io/address/{{contract.address}}">{{contract.address}}</a>
+                    </td>
+                    <td>
+                        <span ng-if="contract.isReady" class="ready-color" ng-attr-title="{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}">Ready</span>
+                        <span ng-if="contract.soonReady" class="ready-color" ng-init="time = contract.rightTime">
+                            <img class="soon-ready-icon" src="/static/images/clock.svg"/>
+                            {{contract.rightTime.hours}}:{{contract.rightTime.minutes}}:{{contract.rightTime.seconds}}<br/>
+                            {{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}
+                        </span>
+                        <span ng-if="!(contract.isReady || contract.soonReady)">{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}</span>
+                    </td>
+                    <td><span>{{contract.gasLimit | separateNumber}}</span></td>
+                    <td><span>{{contract.gasPrice}}</span></td>
+                    <td ng-if="isReadyContract" class="reward-cell"><span>{{contract.value | separateNumber}}</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="joule-invoke-warning text-right" ng-if="!isReadyContract">
+        <img class="joule-invoke-warning_icon" src="/static/images/exclamation.svg"/>
+        <span class="joule-invoke-warning_text">Currently there are no contracts ready for call</span>
+    </div>
+
+    <div class="joule-invoke-warning text-right" ng-if="isReadyContract">
+        <span class="joule-invoke-warning_text">&nbsp;</span>
+    </div>
+    <div class="grid-row" ng-class="{'no-active': !isReadyContract}">
+        <div class="grid-cell grid-cell-2-3">
+            <div class="grid-row">
+                <div class="grid-cell grid-cell-1-2">
+                    <div class="form-control">
+                        <label class="form-control-label">Gas limit:</label>
+                        <input type="text"
+                               name="gas-limit"
+                               commaseparator="{min: fieldsMinValues.gasLimit, max: 4000000}"
+                               class="text-field" ng-model="transactionFormData.gas" required>
+                        <div class="text-field-warning" ng-if="invokeContractForm['gas-limit'].$error['min']">Gas limit is too small for the call</div>
+                    </div>
+                </div>
+                <div class="grid-cell grid-cell-1-2">
+                    <div class="form-control">
+                        <label class="form-control-label">Gas price(GWei):</label>
+                        <input type="text"
+                               name="gas-price"
+                               commaseparator="{min: fieldsMinValues.gasPrice}"
+                               class="text-field" ng-model="transactionFormData.gasPrice" required>
+                        <div class="text-field-warning" ng-if="invokeContractForm['gas-price'].$error['min']">Gas price is too small for the call</div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-row"><br/><br/>
+                <div class="grid-cell grid-cell-1">
+                    <button class="btn submit-btn" type="submit" ng-if="selectedWallet.type !== 'infura'">
+                        <span>Send</span>
+                    </button>
+                    <a class="btn submit-btn" target="_blank"
+                       ng-attr-href="{{
+                            'https://www.myetherwallet.com/?data=' + invokeSignature +
+                            '&value=0&to=' + contractAddress +
+                            '&gaslimit=' + transactionFormData.gas + '#send-transaction'
+                        }}" ng-if="selectedWallet.type === 'infura'">
+                        <span>Send</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>

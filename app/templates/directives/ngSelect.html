@@ -1,0 +1,44 @@
+<label
+    class="select {{ngSelectOptions.class}}"
+    ng-class="{focus: focusedSelect, active: ngSelectOptions.showed}">
+    <span ng-mousedown="toggleList($event)"
+          class="select-active-area"
+          translate>
+        <img class="select-active-area-icon" ng-if="ngSelectOptions.icon" ng-attr-src="{{ngSelectOptions.iconPath + selectedOption[ngSelectOptions.icon] + '.svg' }}"/>
+        <span class="select-active-area-text">{{ ngSelectOptions.label ? getLabelModel(selectedOption, ngSelectOptions.label) : selectedOption }}</span>
+    </span>
+    <span class="hidden-items">
+        <span class="no-visibility block"
+              ng-repeat="option in showedList">{{ ngSelectOptions.label ? getLabelModel(option, ngSelectOptions.label) : option }}</span>
+    </span>
+    <select
+            ng-model="ngModel"
+            ng-focus="focusSelect()"
+            ng-blur="blurSelect()"
+            ng-keydown="selectKeyDown($event)"
+            data-test-element="{{dataTestElement}}"
+            ng-options="
+            (ngSelectOptions.value ? option[ngSelectOptions.value] : option) as (ngSelectOptions.label ? getLabelModel(option, ngSelectOptions.label) : option) disable when option.information for option in showedList | orderBy: (ngSelectOptions.groupBy || $index)">
+    </select>
+    <!--- Select list popUp --->
+    <div class="select-list-container"
+         ng-class="[ngSelectOptions.class + '-container', !showedList.length ? 'empty-list' : '']"
+         ng-select-tooltip="{checker: ngSelectOptions.showed}"
+    >
+        <ul class="select-list"
+            ng-scrolled-block="{
+                watcher: showedList.length,
+                showed: ngSelectOptions.showed,
+                activeItemIndex: showedList.indexOf(selectedOption)
+            }">
+            <li class="select-option"
+                ng-repeat="option in showedList | orderBy: (ngSelectOptions.groupBy || $index)"
+                ng-mousedown="selectOption(option, $event)"
+                ng-class="{'information-item': option.information, 'disabled-value': option.disabled, 'selected': option == selectedOption}">
+                <img class="select-option-icon" ng-if="ngSelectOptions.icon" ng-attr-src="{{ngSelectOptions.iconPath + option[ngSelectOptions.icon] + '.svg' }}"/>
+                <span class="select-option-text" translate>{{(ngSelectOptions.label ? getLabelModel(option, ngSelectOptions.label) : option) || 'n/a' }}</span>
+            </li>
+        </ul>
+    </div>
+    <!--- / Select list popUp --->
+</label>
