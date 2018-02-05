@@ -130,6 +130,7 @@ angular.module('app').controller('registrationController', function($scope, $tim
 
     $scope.checkEstimateGas = function() {
         var getEstimateGas = function() {
+            if (!$scope.contract.address) return;
             jouleService.getEstimateGas($scope.contract.address).then(function(result) {
                 if (result.error) {
                     $scope.addressIsError = true;
@@ -139,7 +140,6 @@ angular.module('app').controller('registrationController', function($scope, $tim
                     $scope.checkContractAddress = true;
                 }
                 $scope.contract.gasLimit = result.result;
-                $scope.recommendedGasLimit = result.result;
                 $scope.checkRegistrationAmount();
             });
         };

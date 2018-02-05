@@ -1,0 +1,68 @@
+<div class="joule-invoke">
+
+    <div ng-select
+         class="joule-invoke-wallet-select"
+         ng-model="selectedWallet"
+         ng-select-change="onSelectWallet"
+         ng-model-list="pageContent.wallets"
+         ng-select-options="{class: 'select-1', label: 'wallet', icon: 'type', iconPath: '/static/images/web3-clients/'}"></div>
+
+
+    <div class="joule-invoke-contracts_container">
+        <div class="joule-invoke-contracts">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="joule-invoke-contracts_table">
+                <thead class="joule-invoke-contracts_table__head">
+                <tr>
+                    <th>
+                        <div>
+                            <span>Contract address</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Start date/time</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Gas limit</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Gas price (GWei)</span>
+                        </div>
+                    </th>
+                    <th>
+                        <div>
+                            <span>Registered</span>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="joule-invoke-contracts_table__body">
+                <tr ng-repeat="contract in contractsList">
+                    <td>
+                        <a class="contract-address"
+                           target="blank"
+                           ng-attr-href="https://ropsten.etherscan.io/address/{{contract.returnValues._address}}">{{contract.returnValues._address}}</a>
+                    </td>
+                    <td>
+                        <span style="white-space: pre">{{contract.returnValues._timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
+                    </td>
+                    <td>
+                        <span>{{contract.returnValues._gasLimit | separateNumber}}</span>
+                    </td>
+                    <td>
+                        <span>{{web3Utils.fromWei(contract.returnValues._gasPrice, 'gwei')}}</span>
+                    </td>
+                    <td>
+                        <span style="white-space: pre">{{contract.blockHashInfo.timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

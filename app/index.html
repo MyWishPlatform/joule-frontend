@@ -64,6 +64,11 @@
            class="btn btn-transparent main-menu-link">
             <span>Contract registration</span>
         </a>
+        <a ui-sref="main.registered"
+           ng-class="{'btn-transparent_active': state.current.name == 'main.registered'}"
+           class="btn btn-transparent main-menu-link">
+            <span>My registered contracts</span>
+        </a>
     </nav>
     <main class="main-content-page" ui-view></main>
 </div>

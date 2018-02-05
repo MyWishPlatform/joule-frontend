@@ -41,6 +41,22 @@ module.config(function($stateProvider, $locationProvider, $urlRouterProvider) {
             }
         },
         controller: 'registrationController'
+    }).state('main.registered', {
+        url: '/registered',
+        templateUrl: templatesPath + 'registered.html',
+        resolve: {
+            walletsList: function(jouleService) {
+                return jouleService.getAccounts();
+            },
+            activeWallet: function(walletsList, jouleService) {
+                var currentWallet = jouleService.getActiveWallet();
+                if (!currentWallet || (currentWallet.type === 'infura')) return;
+                return jouleService.getWalletBalance(currentWallet.wallet).then(function(result) {
+                    currentWallet.balance = Web3.utils.fromWei(result.balance, 'ether');
+                });
+            }
+        },
+        controller: 'registeredController'
     });
 
     $locationProvider.html5Mode({

@@ -48,7 +48,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
     var checkSoonReadyTimer = function() {
         if (!soonReadyContracts.length) {
-            $timeout.cancel(soonReadyTimer);
+            $interval.cancel(soonReadyTimer);
             return;
         }
         $scope.nowTime = (new Date()).getTime();
@@ -114,9 +114,8 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
                 contract.value = Web3.utils.fromWei(new BigNumber(data).minus(new BigNumber(gasPrice).times(gasLimit)).toString(), 'ether');
             });
         });
-
+        soonReadyTimer ? $interval.cancel(soonReadyTimer) : false;
         soonReadyTimer = $interval(checkSoonReadyTimer, 250);
-        subscribeToJoule();
     };
 
     $scope.sendTransaction = function() {
@@ -129,9 +128,9 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         });
     };
 
-    var subscribeToJoule = function() {
-        // console.log(jouleService.getPastEvents('allEvents'));
-    };
+    $scope.$on('$destroy', function() {
+        soonReadyTimer ? $interval.cancel(soonReadyTimer) : false;
+    });
 
 
 });

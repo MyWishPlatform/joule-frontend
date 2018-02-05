@@ -176,6 +176,23 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
+    this.getRegisteredContracts = function(userAddress) {
+        var defer = $q.defer();
+        contract.getPastEvents('Registered', {
+            fromBlock: 2545593,
+            toBlock: 'latest',
+            topics: [
+                Web3.utils.sha3("Registered(address,address,uint256,uint256,uint256)"),
+                Web3.utils.padLeft(userAddress, 64)
+            ]
+        }, function(error, result) {
+            defer.resolve({
+                error: error,
+                result: result
+            });
+        });
+        return defer.promise;
+    };
 
     this.getPastEvents = function(eventName) {
         return contract.getPastEvents(eventName, {
@@ -201,11 +218,20 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
 
     this.checkCode =  function(contractAddress) {
         var defer = $q.defer();
-        web3.eth.getCode(contractAddress).then(function(result) {
-            defer.resolve({
-                result: result
+        if (!contractAddress) {
+            return defer.promise;
+        }
+        try {
+            web3.eth.getCode(contractAddress).then(function (result) {
+                defer.resolve({
+                    result: result
+                });
             });
-        });
+        } catch (err) {
+            defer.resolve({
+                error: 'Checksum is failed'
+            });
+        }
         return defer.promise;
     };
 
@@ -232,6 +258,14 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
 
     this.getContractAddress = function() {
         return JOULE_SETTINGS.JOULE.JOULE_ADDRESS;
+    };
+
+    this.getBlock = function(blockHash) {
+        var defer = $q.defer();
+        web3.eth.getBlock(blockHash).then(function(data) {
+            defer.resolve(data);
+        });
+        return defer.promise;
     };
 
 });
