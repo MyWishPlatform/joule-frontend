@@ -53,7 +53,9 @@
     <header class="main-content-header">
         <div class="float-left text-right">
             <img class="logotype" src="/static/images/mywish-joule-logo.svg"/>
-            <div class="version" ng-if="version">v{{version.version}}.{{version.minor}}</div>
+            <div class="version" ng-if="version" ng-bind="'v'+version.version+'.'+version.minor">
+
+            </div>
         </div>
     </header>
     <nav class="main-menu">

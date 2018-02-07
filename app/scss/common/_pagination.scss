@@ -1,0 +1,32 @@
+.invoke-table-pagination {
+  display: block;
+  list-style-type: none;
+  padding: 1.5em 0;
+  margin: 0;
+  text-align: center;
+  &_item {
+    display: inline-block;
+    margin: 0 0.2em;
+    &_link {
+      @extend .base-rounded-section;
+      &.no_active {
+        opacity: 0.3;
+        cursor: default;
+      }
+      &.active {
+        background-color: $main-blue-color;
+        color: #fff;
+      }
+      &:not(.no_active) {
+        &:hover {
+          background-color: #a0ceff;
+        }
+      }
+      display: block;
+      padding: 0.5em 0.8em;
+      color: #000;
+      text-decoration: none;
+      font-size: 1.4em;
+    }
+  }
+}

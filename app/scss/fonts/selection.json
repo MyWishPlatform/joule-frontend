@@ -1505,6 +1505,35 @@
     {
       "icon": {
         "paths": [
+          "M366 698l196-196-196-196 60-60 256 256-256 256z"
+        ],
+        "attrs": [
+          {}
+        ],
+        "isMulticolor": false,
+        "isMulticolor2": false,
+        "tags": [
+          "keyboard_arrow_right"
+        ],
+        "grid": 24
+      },
+      "attrs": [
+        {}
+      ],
+      "properties": {
+        "order": 1,
+        "id": 4,
+        "prevSize": 32,
+        "code": 59708,
+        "name": "keyboard_arrow_right"
+      },
+      "setIdx": 19,
+      "setId": 6,
+      "iconIdx": 0
+    },
+    {
+      "icon": {
+        "paths": [
           "M426 726l384-384-60-62-324 324-152-152-60 60zM512 86c236 0 426 190 426 426s-190 426-426 426-426-190-426-426 190-426 426-426z"
         ],
         "attrs": [
@@ -1529,7 +1558,7 @@
       },
       "setIdx": 19,
       "setId": 6,
-      "iconIdx": 0
+      "iconIdx": 1
     },
     {
       "icon": {

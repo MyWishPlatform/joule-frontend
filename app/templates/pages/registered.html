@@ -54,16 +54,28 @@
                     <td>
                         <span>{{contract.returnValues._gasLimit | separateNumber}}</span>
                     </td>
-                    <td>
+                    <td class="text-center">
                         <span>{{web3Utils.fromWei(contract.returnValues._gasPrice, 'gwei')}}</span>
                     </td>
                     <td>
                         <span style="white-space: pre">{{contract.blockHashInfo.timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
                     </td>
-                    <td>
-                        <span>
-                            <button ng-click="unregisterContract(contract)">Unregister</button>
-                        </span>
+                    <td class="text-center reward-cell">
+                        <button ng-if="!contract.unregistered && !contract.expired && !contract.transactionInProgress" class="btn btn-icon red-color"
+                                title="Unregister"
+                                ng-click="unregisterContract(contract)">
+                            <i class="icon-delete-button"></i>
+                        </button>
+                        <span ng-if="contract.unregistered" class="red-color">Unregistered</span>
+                        <span ng-if="contract.expired" class="red-color">Expired</span>
+
+                        <div ng-if="contract.transactionInProgress">
+                            <div class="preloader-container">
+                                <div class="preloader-circle preloader-circle-1 blue-color"></div>
+                                <div class="preloader-circle preloader-circle-2 blue-color"></div>
+                                <div class="preloader-circle preloader-circle-3 blue-color"></div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

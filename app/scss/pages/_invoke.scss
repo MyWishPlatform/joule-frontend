@@ -77,7 +77,6 @@
           a {
             &.contract-address {
               display: block;
-              color: #000;
               max-width: 10em;
               overflow: hidden;
               text-overflow: ellipsis;
@@ -104,6 +103,9 @@
     }
     &_text {
       font-size: 1.2em;
+      a {
+        color: inherit;
+      }
     }
     &_icon {
       margin-right: 0.5em;

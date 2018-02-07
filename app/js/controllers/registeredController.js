@@ -24,11 +24,26 @@ angular.module('app').controller('registeredController', function($scope, wallet
 
     jouleService.setProviderForWallet($scope.selectedWallet);
 
-
+    var getUnregisteredContracts = function(contractsList, callback) {
+        jouleService.getUnregisteredContracts($scope.selectedWallet.wallet).then(function(response) {
+            if (response.error) {
+                callback();
+                return;
+            }
+            response.result.map(function(unregisteredTransaction) {
+                var transactionFromList = contractsList.filter(function(transaction) {
+                    return (transaction.returnValues._timestamp === unregisteredTransaction.returnValues._timestamp) && (transaction.returnValues._address === unregisteredTransaction.returnValues._address)
+                })[0];
+                if (transactionFromList) {
+                    transactionFromList.unregistered = true;
+                }
+            });
+            callback();
+        });
+    };
 
     var getRegisteredContracts = function() {
         jouleService.getRegisteredContracts($scope.selectedWallet.wallet).then(function(response) {
-            console.log(response);
             if (response.error) {
                 $scope.contractsList = [];
                 return;
@@ -38,14 +53,40 @@ angular.module('app').controller('registeredController', function($scope, wallet
                     transaction.blockHashInfo = blockHashInfo;
                 });
             });
-            $scope.contractsList = response.result;
+            getUnregisteredContracts(response.result, function() {
+                response.result.map(function(transaction) {
+                    if ((!transaction.unregistered) && (transaction.returnValues._timestamp * 1000 < (new Date()).getTime())) {
+                        transaction.expired = true;
+                    }
+                });
+                $scope.contractsList = response.result;
+            });
         });
     };
     getRegisteredContracts();
 
     $scope.unregisterContract = function(contract) {
-        jouleService.unregisterContract(contract);
-        console.log(contract);
+        jouleService.unregisterContract(contract).then(function(response) {
+            contract.transactionInProgress = true;
+            $scope.transactionStatusError = false;
+            if (response.error) {
+                return;
+            }
+            jouleService.checkTransaction(response.result).then(function(response) {
+                contract.transactionInProgress = false;
+                var result = response.result;
+                var status = Web3.utils.hexToNumber(result.status);
+                switch (status) {
+                    case 0:
+                        $scope.transactionAddress = transactionHash;
+                        $scope.transactionStatusError = true;
+                        break;
+                    case 1:
+                        contract.unregistered = true;
+                        break;
+                }
+            });
+        });
     };
 
 });

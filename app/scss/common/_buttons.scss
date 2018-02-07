@@ -7,13 +7,14 @@
   text-decoration: none;
   display: inline-block;
   font-size: 1em;
+  outline: none;
   &[disabled] {
     opacity: 0.5;
   }
   &:not([disabled]) {
     cursor: pointer;
   }
-  &:not([disabled]):not(.btn-transparent) {
+  &:not([disabled]):not(.btn-transparent):not(.btn-icon) {
     &:hover, &:focus {
       box-shadow: 0 0.4em 1.3em rgba(0, 0, 0, 0.2);
     }
@@ -37,4 +38,14 @@
       border: 1px solid #fff;
     }
   }
+
+  &.btn-icon {
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.5em;
+    i {
+      font-size: 2em;
+    }
+  }
+
 }

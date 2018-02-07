@@ -31,9 +31,10 @@ main, nav, footer, header {
   }
   .version {
     line-height: 1em;
-    margin-top: -1em;
+    margin-top: -1.3em;
   }
 }
+
 .text-right {
   text-align: right;
 }
@@ -44,6 +45,12 @@ main, nav, footer, header {
 }
 .ready-color {
   color: #4BB809;
+}
+.soon-ready-color {
+  color: $main-blue-color;
+}
+.red-color {
+  color: #a00;
 }
 
 .base-rounded-section {
@@ -66,4 +73,10 @@ main, nav, footer, header {
 }
 .float-left {
   float: left;
+}
+a {
+  color: $main-blue-color;
+  &:hover {
+    text-decoration: none;
+  }
 }

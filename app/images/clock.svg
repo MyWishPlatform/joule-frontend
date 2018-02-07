@@ -14,7 +14,7 @@
    version="1.1"
    id="svg2"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="clock (1).svg">
+   sodipodi:docname="clock.svg">
   <metadata
      id="metadata26">
     <rdf:RDF>
@@ -35,12 +35,12 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="732"
+     inkscape:window-width="1145"
      inkscape:window-height="480"
      id="namedview24"
      showgrid="false"
      inkscape:zoom="10.727273"
-     inkscape:cx="11"
+     inkscape:cx="-4.3813557"
      inkscape:cy="11"
      inkscape:window-x="10"
      inkscape:window-y="34"
@@ -53,35 +53,35 @@
   <g
      id="Canvas"
      transform="translate(-2854 -3009)"
-     style="fill:#4bb809;fill-opacity:1">
+     style="fill:#206eff;fill-opacity:1">
     <g
        id="clock"
-       style="fill:#4bb809;fill-opacity:1">
+       style="fill:#206eff;fill-opacity:1">
       <g
          id="Group"
-         style="fill:#4bb809;fill-opacity:1">
+         style="fill:#206eff;fill-opacity:1">
         <g
            id="g11"
-           style="fill:#4bb809;fill-opacity:1">
+           style="fill:#206eff;fill-opacity:1">
           <g
              id="Vector"
-             style="fill:#4bb809;fill-opacity:1">
+             style="fill:#206eff;fill-opacity:1">
             <use
                xlink:href="#path0_fill"
                transform="translate(2854 3009)"
                fill="#206EFF"
                id="use14"
-               style="fill:#4bb809;fill-opacity:1" />
+               style="fill:#206eff;fill-opacity:1" />
           </g>
           <g
              id="g16"
-             style="fill:#4bb809;fill-opacity:1">
+             style="fill:#206eff;fill-opacity:1">
             <use
                xlink:href="#path1_fill"
                transform="translate(2864.32 3012.98)"
                fill="#206EFF"
                id="use18"
-               style="fill:#4bb809;fill-opacity:1" />
+               style="fill:#206eff;fill-opacity:1" />
           </g>
         </g>
       </g>

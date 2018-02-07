@@ -1,4 +1,4 @@
-angular.module('app').controller('registrationController', function($scope, $timeout, jouleService, walletsList) {
+angular.module('app').controller('registrationController', function($scope, $timeout, jouleService, walletsList, $state) {
 
     $scope.durationList = [
         {
@@ -167,6 +167,7 @@ angular.module('app').controller('registrationController', function($scope, $tim
 
     var validGasSettings = false;
     $scope.checkRegistrationAmount = function() {
+        $scope.transactionStatusError = false;
         if (!($scope.contract.gasPrice && $scope.contract.gasLimit)) {
             $scope.checkRegistrationInfo = false;
             validGasSettings = false;
@@ -198,6 +199,7 @@ angular.module('app').controller('registrationController', function($scope, $tim
         });
     };
 
+
     $scope.registerContract = function() {
         var gasPrice = $scope.contract.gasPrice;
         jouleService.registerFor(
@@ -207,9 +209,33 @@ angular.module('app').controller('registrationController', function($scope, $tim
             $scope.contract.gasLimit,
             gasPrice,
             Web3.utils.toWei($scope.checkRegistrationInfo.amount, 'ether')
-        ).then(function() {
-            console.log(arguments);
+        ).then(function(response) {
+            if (response.error) {
+                return;
+            }
+            $scope.transactionInProgress = true;
+            var transactionHash = response.result;
+            $scope.transactionStatusError = false;
+            jouleService.checkTransaction(transactionHash).then(function(response) {
+                console.log(response);
+                $scope.transactionInProgress = false;
+                var result = response.result;
+                var status = Web3.utils.hexToNumber(result.status);
+                switch (status) {
+                    case 0:
+                        $scope.transactionAddress = transactionHash;
+                        $scope.transactionStatusError = true;
+                        // if (result.gasUsed == $scope.contract.gasLimit) {
+                        //     $scope.transactionStatusError = 1;
+                        // } else {
+                        //     $scope.transactionStatusError = 2;
+                        // }
+                        break;
+                    case 1:
+                        $state.go('main.registered');
+                        break;
+                }
+            });
         });
     };
-
 });

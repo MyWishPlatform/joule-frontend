@@ -1,6 +1,5 @@
-angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI, $rootScope) {
+angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI, $rootScope, $interval) {
     var web3 = new Web3(), contract, _this = this;
-
 
     /* Определение провайдеров клиентов */
     var web3Providers = {};
@@ -73,6 +72,11 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
     this.getContractsList = function(contractsCount) {
         var defer = $q.defer();
         var contractsList = [];
+
+        // contract.methods.getCount().call(function() {
+        //     console.log(arguments);
+        // });
+
         contract.methods.getTop(contractsCount).call(function(error, result) {
             result['addresses'].map(function(addr, index) {
                 var gasLimit = result['gasLimits'][index];
@@ -82,7 +86,10 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
                     gasPriceWei: gasPrice,
                     gasPrice: Web3.utils.fromWei(gasPrice, 'gwei'),
                     gasLimit: gasLimit,
-                    timestamp: result['timestamps'][index] * 1000
+                    timestamp: result['timestamps'][index] * 1000,
+                    reward: Web3.utils.fromWei(result['rewardAmounts'][index], 'ether'),
+                    rewardGwei: Web3.utils.fromWei(result['rewardAmounts'][index], 'gwei'),
+                    invokeGas: result['invokeGases'][index]
                 };
                 contractsList.push(contractInfo);
             });
@@ -104,7 +111,7 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
                 gitHash: web3.utils.bytesToHex([versionBytes[4], versionBytes[5], versionBytes[6], versionBytes[7]])
             };
             $rootScope.$apply();
-            console.log($rootScope.version);
+            // console.log($rootScope.version);
         });
         // web3.eth.getBlock("pending", function(error, result) {
         //     console.log('error:', error);
@@ -202,6 +209,27 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
+    this.getUnregisteredContracts = function(userAddress) {
+        var defer = $q.defer();
+        contract.getPastEvents('Unregistered', {
+            fromBlock: 2545593,
+            toBlock: 'latest',
+            topics: [
+                Web3.utils.sha3("Unregistered(address,address,uint256,uint256,uint256,uint256)"),
+                Web3.utils.padLeft(userAddress, 64)
+            ]
+        }, function(error, result) {
+            defer.resolve({
+                error: error,
+                result: result
+            });
+        });
+        return defer.promise;
+    };
+
+
+
+
     this.getPastEvents = function(eventName) {
         return contract.getPastEvents(eventName, {
             fromBlock: 2545593,
@@ -289,7 +317,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
                     });
                     return;
                 }
-
                 contract.methods.unregister(
                     value,
                     contractModel.returnValues._address,
@@ -298,11 +325,69 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
                     contractModel.returnValues._gasPrice
                 ).send({
                     from: contractModel.returnValues._registrant
-                }, function() {
-                    console.log(arguments);
+                }, function(error, result) {
+                    defer.resolve({
+                        error: error,
+                        result: result
+                    });
                 });
         });
         return defer.promise;
     };
+
+    this.getContractsCount = function() {
+        contract.methods.getCount().call(function() {
+
+        });
+    };
+
+
+    var checkTransaction = function(transactionHash, callback) {
+        try {
+            web3.eth.getTransactionReceipt(transactionHash, function (error, result) {
+                if (error || result) {
+                    callback({
+                        error: error,
+                        result: result
+                    });
+                }
+            });
+        } catch(error) {
+            callback({
+                error: 'Transaction error'
+            });
+        }
+    };
+
+    this.checkTransaction = function(transactionHash) {
+        var defer = $q.defer();
+        var interval = $interval(function() {
+            checkTransaction(transactionHash, function(result) {
+                defer.resolve(result);
+                $interval.cancel(interval);
+            });
+        }, 5000);
+        return defer.promise;
+    };
+
+    this.getTransactionInfo = function(transactionHash) {
+        var defer = $q.defer();
+        try {
+            web3.eth.getTransactionReceipt(transactionHash, function (error, result) {
+                if (error || result) {
+                    defer.resolve({
+                        error: error,
+                        result: result
+                    });
+                }
+            });
+        } catch(error) {
+            defer.resolve({
+                error: 'Transaction error'
+            });
+        }
+        return defer.promise;
+    };
+
 
 });

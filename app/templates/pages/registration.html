@@ -228,8 +228,16 @@
         Стоимость регистрации контракта {{checkRegistrationInfo.amount}} ETH
     </span>
 
-    <div><br/>
-        <button class="btn submit-btn" type="submit" ng-disabled="!checkContractAddress || !contractRegistrationForm.$valid" ng-if="selectedWallet.type !== 'infura'">
+    <div class="joule-invoke-warning" ng-if="transactionStatusError">
+        <img class="joule-invoke-warning_icon" src="/static/images/exclamation.svg"/>
+        <span class="joule-invoke-warning_text">
+            Failed: Check on <a ng-attr-href="{{etherscanLink}}tx/{{transactionAddress}}" target="_blank">{{etherscanLink}}tx/{{transactionAddress}}</a>
+        </span>
+    </div>
+
+    <div ng-if="!transactionInProgress"><br/>
+        <button class="btn submit-btn" type="submit"
+                ng-disabled="!checkContractAddress || !contractRegistrationForm.$valid" ng-if="selectedWallet.type !== 'infura'">
             <span>Registration</span>
         </button>
         <a ng-attr-href="{{
@@ -240,6 +248,13 @@
            class="btn submit-btn" ng-disabled="!checkContractAddress || !contractRegistrationForm.$valid" ng-if="selectedWallet.type === 'infura'">
             <span>Registration</span>
         </a>
+    </div>
+    <div ng-if="transactionInProgress"><br/>
+        <div class="preloader-container">
+            <div class="preloader-circle preloader-circle-1"></div>
+            <div class="preloader-circle preloader-circle-2"></div>
+            <div class="preloader-circle preloader-circle-3"></div>
+        </div>
     </div>
 </form>
 

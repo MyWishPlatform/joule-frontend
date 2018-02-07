@@ -1,4 +1,4 @@
-angular.module('app').controller('miningController', function($scope, $timeout, $interval, jouleService, walletsList, invokeSignature) {
+angular.module('app').controller('miningController', function($scope, $timeout, $interval, jouleService, walletsList, invokeSignature, $state) {
 
     $scope.pageContent = {
         wallets: [{
@@ -46,6 +46,16 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
     $scope.isReadyContract = false;
     var readyContracts, soonReadyContracts, soonReadyTimer;
 
+    var readyContractCheckReward = function(contract) {
+        $scope.transactionFormData.gas =
+            $scope.transactionFormData.gas ? Math.max($scope.transactionFormData.gas, contract.invokeGas) : contract.invokeGas;
+        $scope.transactionFormData.gasPrice =
+            $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, contract.gasPrice) : contract.gasPrice;
+        contract.isReady = true;
+        $scope.recommendedGas = $scope.transactionFormData.gas;
+
+    };
+
     var checkSoonReadyTimer = function() {
         if (!soonReadyContracts.length) {
             $interval.cancel(soonReadyTimer);
@@ -53,12 +63,10 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         }
         $scope.nowTime = (new Date()).getTime();
         soonReadyContracts.map(function(contract) {
-            if (contract.timestamp <= $scope.nowTime) {
+            if ((contract.timestamp <= $scope.nowTime) && !contract.isReady) {
                 contract.soonReady = false;
-                contract.isReady = true;
-                jouleService.getContractPrice(gasLimit, gasPrice).then(function(data) {
-                    contract.value = Web3.utils.fromWei(new BigNumber(data).minus(new BigNumber(gasPrice).times(gasLimit)).toString(), 'ether');
-                });
+                readyContracts.push(contract);
+                readyContractCheckReward(contract);
             } else {
                 var rightTime = Math.floor((contract.timestamp - $scope.nowTime) / 1000);
                 var hours = Math.floor(rightTime / 3600);
@@ -74,15 +82,21 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
                 };
             }
         });
+        $scope.isReadyContract = !!readyContracts.length;
         soonReadyContracts = soonReadyContracts.filter(function(contract) {
             return contract.soonReady;
         });
     };
+
     var checkReadyContracts = function() {
         var now = (new Date()).getTime();
+
         readyContracts = $scope.contractsInfo.data.filter(function(contract) {
             return (contract.timestamp <= (new Date()).getTime())
         });
+        readyContracts.map(readyContractCheckReward);
+        $scope.isReadyContract = !!readyContracts.length;
+
 
         soonReadyContracts = $scope.contractsInfo.data.filter(function(contract) {
             return (readyContracts.indexOf(contract) === -1) && (contract.timestamp <= (now + 24 * 3600000));
@@ -92,28 +106,12 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             contract.soonReady = true;
         });
 
-        readyContracts.map(function(contract) {
-            $scope.transactionFormData.gas =
-                $scope.transactionFormData.gas ? Math.max($scope.transactionFormData.gas, contract.gasLimit) : contract.gasLimit;
-            $scope.transactionFormData.gasPrice =
-                $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, contract.gasPrice) : contract.gasPrice;
-            contract.isReady = true;
-        });
-
         $scope.fieldsMinValues = {
             gasLimit: $scope.transactionFormData.gas,
             gasPrice: $scope.transactionFormData.gasPrice
         };
 
-        $scope.isReadyContract = !!readyContracts.length;
-
-        readyContracts.map(function(contract) {
-            var gasPrice = contract['gasPriceWei'];
-            var gasLimit = contract['gasLimit'];
-            jouleService.getContractPrice(gasLimit, gasPrice).then(function(data) {
-                contract.value = Web3.utils.fromWei(new BigNumber(data).minus(new BigNumber(gasPrice).times(gasLimit)).toString(), 'ether');
-            });
-        });
+        checkSoonReadyTimer();
         soonReadyTimer ? $interval.cancel(soonReadyTimer) : false;
         soonReadyTimer = $interval(checkSoonReadyTimer, 250);
     };
@@ -123,8 +121,27 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             gas: $scope.transactionFormData.gas,
             gasPrice: $scope.transactionFormData.gasPrice,
             from: $scope.selectedWallet.wallet
-        }).then(function(result) {
-            console.log(result);
+        }).then(function(response) {
+            $scope.transactionInProgress = true;
+            var transactionHash  = response.result;
+            jouleService.checkTransaction(response.result).then(function(response) {
+                $scope.transactionInProgress = false;
+                var result = response.result;
+                var status = Web3.utils.hexToNumber(result.status);
+                switch (status) {
+                    case 0:
+                        $scope.transactionAddress = transactionHash;
+                        $scope.transactionStatusError = true;
+                        break;
+                    case 1:
+                        $state.transitionTo($state.current, {}, {
+                            reload: true,
+                            inherit: false,
+                            notify: true
+                        });
+                        break;
+                }
+            });
         });
     };
 

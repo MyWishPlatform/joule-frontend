@@ -23,6 +23,8 @@ module.controller('mainMenuController', function($scope) {
         return APP_CONSTANTS.TEMPLATES.PATH + '/' + template + '.html';
     };
 
+    $rootScope.etherscanLink = APP_CONSTANTS.ETHERSCAN_LINK;
+
     var offset = moment().utcOffset() / 60;
     $rootScope.currentTimezone = (offset > 0 ? '+' : '') + offset;
 
