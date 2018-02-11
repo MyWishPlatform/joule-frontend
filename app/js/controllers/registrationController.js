@@ -127,6 +127,9 @@ angular.module('app').controller('registrationController', function($scope, $tim
     }
 
     jouleService.setProviderForWallet($scope.selectedWallet);
+    jouleService.getMinGasPrice().then(function(response) {
+        $scope.minGasPrice = Web3.utils.fromWei(response.result, 'gwei');
+    });
 
     $scope.checkEstimateGas = function() {
         var getEstimateGas = function() {

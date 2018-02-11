@@ -49,7 +49,7 @@
                                    ng-change="checkRegistrationAmount()"
                                    ng-disabled="!checkContractAddress"
                                    ng-model="contract.gasPrice"
-                                   commaseparator="{regexp: '^[1-9][0-9]*$', min: 30, max: web3Utils.fromWei(web3Utils.toWei('4', 'ether'), 'gwei')}"
+                                   commaseparator="{regexp: '^[1-9][0-9]*$', min: minGasPrice, max: web3Utils.fromWei(web3Utils.toWei('4', 'ether'), 'gwei')}"
                                    class="text-field">
                         </div>
                     </div>

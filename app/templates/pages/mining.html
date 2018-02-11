@@ -62,7 +62,7 @@
                         </span>
                         <span ng-if="!(contract.isReady || contract.soonReady)">{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}</span>
                     </td>
-                    <td><span>{{contract.gasLimit | separateNumber}}</span></td>
+                    <td><span>{{contract.invokeGas | separateNumber}}</span></td>
                     <td><span>{{contract.gasPrice}}</span></td>
                     <td ng-if="isReadyContract" class="reward-cell"><span>{{contract.reward | separateNumber}}</span></td>
                 </tr>
@@ -71,40 +71,40 @@
         </div>
     </div>
 
-    <ul class="invoke-table-pagination">
-        <li class="invoke-table-pagination_item">
-            <span class="invoke-table-pagination_item_link no_active">
-                <i class="icon-keyboard_arrow_left"></i>
-            </span>
-        </li>
+    <!--<ul class="invoke-table-pagination">-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<span class="invoke-table-pagination_item_link no_active">-->
+                <!--<i class="icon-keyboard_arrow_left"></i>-->
+            <!--</span>-->
+        <!--</li>-->
 
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link active" href="#">1</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">2</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">3</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">4</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">5</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">6</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">7</a>
-        </li>
-        <li class="invoke-table-pagination_item">
-            <a class="invoke-table-pagination_item_link" href="#">
-                <i class="icon-keyboard_arrow_right"></i>
-            </a>
-        </li>
-    </ul>
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link active" href="#">1</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">2</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">3</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">4</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">5</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">6</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">7</a>-->
+        <!--</li>-->
+        <!--<li class="invoke-table-pagination_item">-->
+            <!--<a class="invoke-table-pagination_item_link" href="#">-->
+                <!--<i class="icon-keyboard_arrow_right"></i>-->
+            <!--</a>-->
+        <!--</li>-->
+    <!--</ul>-->
 
     <div class="joule-invoke-warning text-right" ng-if="!isReadyContract">
         <img class="joule-invoke-warning_icon" src="/static/images/exclamation.svg"/>
@@ -122,27 +122,29 @@
                         <label class="form-control-label">Gas limit:</label>
                         <input type="text"
                                name="gas-limit"
-                               commaseparator="{max: 4000000}"
+                               ng-change="checkReward()"
+                               commaseparator="{max: 4000000, regexp:'^[0-9]+$'}"
                                class="text-field" ng-model="transactionFormData.gas" required>
                         <div class="text-field-warning" ng-if="invokeContractForm['gas-limit'].$error['max']">Макисмальное значение может быть 4,000,000</div>
-                        <div class="text-field-warning" ng-if="transactionFormData['gas'] < recommendedGas">Gas limit is too small for the call</div>
+                        <div class="text-field-warning" ng-if="!isRewardAmount">
+                            Gas limit is too small for the call
+                        </div>
                     </div>
                 </div>
                 <div class="grid-cell grid-cell-1-2">
                     <div class="form-control">
                         <label class="form-control-label">Gas price(GWei):</label>
                         <input type="text"
+                               ng-change="checkReward()"
                                name="gas-price"
-                               commaseparator="{min: fieldsMinValues.gasPrice}"
+                               commaseparator="{min: 1, regexp:'^[0-9]+$'}"
                                class="text-field" ng-model="transactionFormData.gasPrice" required>
                         <div class="text-field-warning" ng-if="invokeContractForm['gas-price'].$error['min']">Gas price is too small for the call</div>
                     </div>
                 </div>
                 <div class="grid-cell grid-cell-1">
                     <div class="text-field-warning" ng-if="transactionFormData['gas'] && transactionFormData['gasPrice']">
-                        Предполагаемая прибыль
-                        {{bigNumber(contractsInfo.data[0].rewardGwei).minus(bigNumber(transactionFormData['gas']).times(transactionFormData['gasPrice']))|separateNumber}}
-                        GWei
+                        Предполагаемая прибыль {{supposedAmount}} ETH
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI, $rootScope, $interval) {
     var web3 = new Web3(), contract, _this = this;
-
+    console.log(JOULE_ABI);
     /* Определение провайдеров клиентов */
     var web3Providers = {};
     var createWeb3Providers = function() {
@@ -72,11 +72,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
     this.getContractsList = function(contractsCount) {
         var defer = $q.defer();
         var contractsList = [];
-
-        // contract.methods.getCount().call(function() {
-        //     console.log(arguments);
-        // });
-
         contract.methods.getTop(contractsCount).call(function(error, result) {
             result['addresses'].map(function(addr, index) {
                 var gasLimit = result['gasLimits'][index];
@@ -99,6 +94,15 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
+
+    this.getBlockNumber = function() {
+        var defer = $q.defer();
+        web3.eth.getBlockNumber().then(function(data) {
+            defer.resolve(data);
+        });
+        return defer.promise;
+    };
+
     var setJouleContract = function() {
         contract = new web3.eth.Contract(JOULE_ABI);
         contract.options.address = JOULE_SETTINGS.JOULE.JOULE_ADDRESS;
@@ -111,12 +115,7 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
                 gitHash: web3.utils.bytesToHex([versionBytes[4], versionBytes[5], versionBytes[6], versionBytes[7]])
             };
             $rootScope.$apply();
-            // console.log($rootScope.version);
         });
-        // web3.eth.getBlock("pending", function(error, result) {
-        //     console.log('error:', error);
-        //     console.log('results', result);
-        // });
     };
 
     var getAccounts = function(providerName) {
@@ -182,11 +181,26 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         gasPrice = Web3.utils.toWei(String(gasPrice), 'gwei');
         contract.methods.registerFor(registrant, address, timestamp, gasLimit, gasPrice).send({
             from: registrant,
-            gas: gasLimit,
-            gasPrice: gasPrice,
+            // gas: gasLimit,
+            // gasPrice: gasPrice,
             value: amount
         }, function(error, result) {
             defer.resolve({error: error, result: result});
+        });
+        return defer.promise;
+    };
+
+    this.getAllEvents = function(blockNumber) {
+        var defer = $q.defer();
+        contract.getPastEvents('allEvents', {
+            fromBlock: blockNumber || JOULE_SETTINGS.FIRST_BLOCK,
+            toBlock: 'latest',
+            topics: []
+        }, function(error, result) {
+            defer.resolve({
+                error: error,
+                result: result
+            });
         });
         return defer.promise;
     };
@@ -208,7 +222,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         });
         return defer.promise;
     };
-
     this.getUnregisteredContracts = function(userAddress) {
         var defer = $q.defer();
         contract.getPastEvents('Unregistered', {
@@ -227,19 +240,15 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
-
-
-
     this.getPastEvents = function(eventName) {
         return contract.getPastEvents(eventName, {
-            fromBlock: 2545593,
+            fromBlock: JOULE_SETTINGS.FIRST_BLOCK,
             toBlock: 'latest',
             topics: [Web3.utils.sha3("Registered(address,address,uint256,uint256,uint256)")]
         }, function(error, result) {
-            console.log(result);
+
         });
     };
-
     this.getWalletBalance = function(address) {
         var defer = $q.defer();
         web3.eth.getBalance(address, function(error, balance){
@@ -250,8 +259,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         });
         return defer.promise;
     };
-
-
     this.checkCode =  function(contractAddress) {
         var defer = $q.defer();
         if (!contractAddress) {
@@ -270,10 +277,8 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         }
         return defer.promise;
     };
-
     this.getEstimateGas = function(contractAddress) {
         var defer = $q.defer();
-        // web3.eth.getCode(contractAddress).then(console.log);
         try {
             web3.eth.estimateGas({
                 to: contractAddress,
@@ -291,11 +296,9 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         }
         return defer.promise;
     };
-
     this.getContractAddress = function() {
         return JOULE_SETTINGS.JOULE.JOULE_ADDRESS;
     };
-
     this.getBlock = function(blockHash) {
         var defer = $q.defer();
         web3.eth.getBlock(blockHash).then(function(data) {
@@ -303,6 +306,9 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         });
         return defer.promise;
     };
+
+
+
 
     this.unregisterContract = function(contractModel) {
         var defer = $q.defer();
@@ -340,8 +346,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
 
         });
     };
-
-
     var checkTransaction = function(transactionHash, callback) {
         try {
             web3.eth.getTransactionReceipt(transactionHash, function (error, result) {
@@ -358,7 +362,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
             });
         }
     };
-
     this.checkTransaction = function(transactionHash) {
         var defer = $q.defer();
         var interval = $interval(function() {
@@ -369,7 +372,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         }, 5000);
         return defer.promise;
     };
-
     this.getTransactionInfo = function(transactionHash) {
         var defer = $q.defer();
         try {
@@ -389,5 +391,53 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
+    this.getMinGasPrice = function() {
+        var defer = $q.defer();
+        contract.methods.getMinGasPrice().call(function(error, result) {
+            defer.resolve({
+                error: error,
+                result: result
+            });
+        });
+        return defer.promise;
+    };
+
+    // {name: "_contractAddress", type: "address"}
+    // {name: "_timestamp", type: "uint256"}
+    // {name: "_gasLimit", type: "uint256"}
+    // {name: "_gasPrice", type: "uint256"}
+
+
+    this.getNext = function(count, currentRegistration) {
+        var defer = $q.defer();
+        contract.methods.getNext(
+            count,
+            currentRegistration.address,
+            currentRegistration.timestamp / 1000,
+            currentRegistration.gasLimit,
+            currentRegistration.gasPriceWei).call(function(error, result) {
+            var contractsList = [];
+            result['addresses'].map(function(addr, index) {
+                var gasLimit = result['gasLimits'][index];
+                var gasPrice = result['gasPrices'][index];
+                var contractInfo = {
+                    address: result['addresses'][index],
+                    gasPriceWei: gasPrice,
+                    gasPrice: Web3.utils.fromWei(gasPrice, 'gwei'),
+                    gasLimit: gasLimit,
+                    timestamp: result['timestamps'][index] * 1000,
+                    reward: Web3.utils.fromWei(result['rewardAmounts'][index], 'ether'),
+                    rewardGwei: Web3.utils.fromWei(result['rewardAmounts'][index], 'gwei'),
+                    invokeGas: result['invokeGases'][index]
+                };
+                contractsList.push(contractInfo);
+            });
+            defer.resolve({
+                error: error,
+                result: contractsList
+            });
+        });
+        return defer.promise;
+    };
 
 });
