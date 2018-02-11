@@ -67,6 +67,8 @@ angular.module('app').controller('registeredController', function($scope, wallet
 
     $scope.unregisterContract = function(contract) {
         jouleService.unregisterContract(contract).then(function(response) {
+            console.log(response);
+            if (response.error) return;
             contract.transactionInProgress = true;
             $scope.transactionStatusError = false;
             if (response.error) {

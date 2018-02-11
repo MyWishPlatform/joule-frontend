@@ -11,6 +11,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
     $scope.transactionFormData = {};
     $scope.invokeSignature = invokeSignature;
     $scope.contractAddress = jouleService.getContractAddress();
+
     /* Адреса всех кошельков всех клиентов */
     var setWalletBalance = function() {
         if ($scope.selectedWallet.type === 'infura') return;
@@ -18,6 +19,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             $scope.selectedWallet.balance = Web3.utils.fromWei(result.balance, 'ether');
         });
     };
+
     $scope.pageContent.wallets = $scope.pageContent.wallets.concat(walletsList);
     var currentWallet = jouleService.getActiveWallet();
     if (currentWallet) {
@@ -55,13 +57,12 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         if (!($scope.transactionFormData.gas && $scope.transactionFormData.gasPrice)) return;
         var rewardAmount = new BigNumber('0'), usedGas = new BigNumber('0'), index = 0;
 
-        var allGas = new BigNumber($scope.transactionFormData.gas).times(
-            Web3.utils.toWei(new BigNumber($scope.transactionFormData.gasPrice).toString(10), 'gwei')
-        );
+        var allGas = new BigNumber($scope.transactionFormData.gas);
 
         while (index < readyContracts.length) {
-            var invokeTxGas = new BigNumber(readyContracts[index].invokeGas).times($scope.transactionFormData.gas);
+            var invokeTxGas = new BigNumber(readyContracts[index].invokeGas);
             usedGas = usedGas.plus(invokeTxGas);
+
             if (allGas.minus(usedGas) >= 0) {
                 rewardAmount = rewardAmount.plus(Web3.utils.toWei(readyContracts[index].reward, 'ether'));
             } else {
@@ -69,8 +70,9 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             }
             index++;
         }
+
         $scope.isRewardAmount = rewardAmount > 0;
-        var supposedAmount = rewardAmount.minus(allGas).toString(10);
+        var supposedAmount = rewardAmount.minus(allGas.times(Web3.utils.toWei(String($scope.transactionFormData.gasPrice), 'gwei'))).toString(10);
         $scope.supposedAmount = Web3.utils.fromWei(supposedAmount, 'ether');
     };
 
@@ -89,70 +91,49 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
     };
 
-    var updateRegistrationsList = function(registration, count) {
-        console.log(new Date(registration.timestamp));
+
+    var checkContractsReady = function(newRegistrations) {
         var now = (new Date()).getTime();
+        var newSoonReadyContracts = newRegistrations.filter(function(contract) {
+            return (readyContracts.indexOf(contract) === -1) && (contract.timestamp <= (now + 24 * 3600000));
+        });
+        newSoonReadyContracts.map(function(contract) {
+            contract.soonReady = true;
+            checkSoonReadyContract(contract);
+        });
+        soonReadyContracts = soonReadyContracts.concat(newSoonReadyContracts);
+    };
+
+    var updateRegistrationsList = function(registration, count) {
         var index = $scope.contractsInfo.data.indexOf(registration);
         jouleService.getNext(count, registration).then(function(response) {
-
-            console.log(new Date(response.result[0].timestamp));
-
-            var newSoonReadyContracts = response.result.filter(function(contract) {
-                return (readyContracts.indexOf(contract) === -1) && (contract.timestamp <= (now + 24 * 3600000));
-            });
-
-            newSoonReadyContracts.map(function(contract) {
-                contract.soonReady = true;
-            });
-
-            soonReadyContracts = soonReadyContracts.concat(newSoonReadyContracts);
-
+            checkContractsReady(response.result);
             var part1 = $scope.contractsInfo.data.slice(0, index + 1);
             var part2 = $scope.contractsInfo.data.slice(index + 1);
-            
-            console.log(new Date(response.result[0].timestamp));
-
             $scope.contractsInfo.data = part1.concat(response.result, part2);
         });
     };
 
-    var checkRegistrationsList = function(eventsList) {
-        console.log(eventsList);
-        var registeredList = eventsList.filter(function(event) {
-            return event.event === 'Registered';
-        });
-        var invokedList = eventsList.filter(function(event) {
-            return event.event === 'Invoked';
-        });
+    var addNewRegistrations = function(registeredList) {
 
-        invokedList = invokedList.filter(function(event) {
-            return event.returnValues._status;
-        });
-
-        $scope.contractsInfo.data = $scope.contractsInfo.data.filter(function(registration) {
-            return !invokedList.filter(function(event) {
-                return (event.returnValues._timestamp * 1000 === registration.timestamp) && (event.returnValues._address === registration.address)
-            }).length;
-        });
-
+        /* Добавлены в начало списка */
         var newRegisteredOnBegin = registeredList.filter(function(event) {
             return event.returnValues._timestamp * 1000 < $scope.contractsInfo.data[0].timestamp;
         });
-
         registeredList = registeredList.filter(function(event) {
             return newRegisteredOnBegin.indexOf(event) === -1;
         });
-
         if (newRegisteredOnBegin.length) {
             jouleService.getContractsList(newRegisteredOnBegin.length).then(function(response) {
-                $scope.contractsInfo.data = response.result.concat($scope.contractsInfo.data);
+                $scope.contractsInfo.data = response.concat($scope.contractsInfo.data);
+                checkContractsReady(response);
             });
         }
 
         if (!registeredList.length) return;
-
         var index = 0;
 
+        /* Добавлены в середину списка */
         while (registeredList.length && (index < $scope.contractsInfo.data.length)) {
             if (!registeredList.length) return;
             var getNewRegistrations = registeredList.filter(function(registration) {
@@ -169,50 +150,104 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             index++;
         }
 
-        // if (registeredList.length) {
-        //     updateRegistrationsList($scope.contractsInfo.data[$scope.contractsInfo.data.length - 1], registeredList.length, true);
-        // }
+        /* Добавлены в конец списка */
+        if (registeredList.length) {
+            jouleService.getNext(1, $scope.contractsInfo.data[$scope.contractsInfo.data.length - 1]).then(function(response) {
+                var nextRegistration = response.result[0];
+                if (nextRegistration && (registeredList.filter(function(event) {
+                    return (event.returnValues._address === nextRegistration.address) && (event.returnValues._timestamp * 1000 === nextRegistration.timestamp)
+                    }).length)) {
+                    updateRegistrationsList($scope.contractsInfo.data[$scope.contractsInfo.data.length - 1], registeredList.length);
+                }
+            });
+        }
+    };
+
+    var checkRegistrationsList = function(eventsList) {
+
+        var registeredList = eventsList.filter(function(event) {
+            return (event.event === 'Registered') && ($scope.contractsInfo.data.filter(function(registration) {
+                    return !((registration.address === event.returnValues._address) && (registration.timestamp === event.returnValues._timestamp))
+                }));
+        });
+
+        var invokedList = eventsList.filter(function(event) {
+            return event.event === 'Invoked';
+        });
+        invokedList = invokedList.filter(function(event) {
+            return event.returnValues._status;
+        });
+
+        if (invokedList.length) {
+            if (registeredList.length) {
+                jouleService.getContractsList(1).then(function(contractsList) {
+                    var firstRegistration = contractsList[0];
+                    var oldEventsCount = registeredList.length;
+                    registeredList = registeredList.filter(function(registeredEvent) {
+                        return registeredEvent.returnValues._timestamp * 1000 > firstRegistration.timestamp;
+                    });
+                    if (oldEventsCount < (registeredList.length + invokedList.length)) {
+                        $scope.contractsInfo.data = $scope.contractsInfo.data.slice(invokedList.length - (oldEventsCount - registeredList.length));
+                    }
+                    addNewRegistrations(registeredList);
+                });
+            } else {
+                $scope.contractsInfo.data = $scope.contractsInfo.data.slice(invokedList.length);
+                addNewRegistrations(registeredList);
+            }
+        } else {
+            addNewRegistrations(registeredList);
+        }
     };
 
     var lastTransactionBlock;
-
+    var oldTransactionsList = [];
     var checkEventsInterval;
-    var checkNextEvents = function() {
-        checkEventsInterval = $timeout(function() {
-            jouleService.getAllEvents(lastTransactionBlock).then(function(response) {
-                checkNextEvents();
-                if (response.error || !response.result.length || !checkEventsInterval) return;
-                lastTransactionBlock = response.result[response.result.length - 1]['blockNumber'];
-                checkRegistrationsList(response.result);
+
+    var getAllEvents = function() {
+        jouleService.getAllEvents(lastTransactionBlock).then(function(response) {
+            checkNextEvents();
+            if (response.error || !response.result.length || !checkEventsInterval) return;
+            lastTransactionBlock = response.result[response.result.length - 1]['blockNumber'];
+            response.result = response.result.filter(function(event) {
+                return oldTransactionsList.indexOf(event.transactionHash) === -1;
             });
-        }, 10000);
+            response.result.map(function(event) {
+                oldTransactionsList.push(event.transactionHash);
+            });
+            checkRegistrationsList(response.result);
+        });
+    };
+    var checkNextEvents = function() {
+        checkEventsInterval = $timeout(getAllEvents, 10000);
     };
 
+    var checkSoonReadyContract = function(contract) {
+        if ((contract.timestamp <= $scope.nowTime) && !contract.isReady) {
+            contract.soonReady = false;
+            readyContracts.push(contract);
+            readyContractCheckReward(contract);
+        } else {
+            var rightTime = Math.floor((contract.timestamp - $scope.nowTime) / 1000);
+            var hours = Math.floor(rightTime / 3600);
+            hours = ((hours < 10) ? '0': '') + hours;
+            var minutes = Math.floor((rightTime % 3600) / 60);
+            minutes = ((minutes < 10) ? '0': '') + minutes;
+            var seconds = rightTime % 60;
+            seconds = ((seconds < 10) ? '0': '') + seconds;
+            contract.rightTime = {
+                hours: hours,
+                minutes: minutes,
+                seconds: seconds
+            };
+        }
+    };
     var checkSoonReadyTimer = function() {
         if (!soonReadyContracts.length) {
             return;
         }
         $scope.nowTime = (new Date()).getTime();
-        soonReadyContracts.map(function(contract) {
-            if ((contract.timestamp <= $scope.nowTime) && !contract.isReady) {
-                contract.soonReady = false;
-                readyContracts.push(contract);
-                readyContractCheckReward(contract);
-            } else {
-                var rightTime = Math.floor((contract.timestamp - $scope.nowTime) / 1000);
-                var hours = Math.floor(rightTime / 3600);
-                hours = ((hours < 10) ? '0': '') + hours;
-                var minutes = Math.floor((rightTime % 3600) / 60);
-                minutes = ((minutes < 10) ? '0': '') + minutes;
-                var seconds = rightTime % 60;
-                seconds = ((seconds < 10) ? '0': '') + seconds;
-                contract.rightTime = {
-                    hours: hours,
-                    minutes: minutes,
-                    seconds: seconds
-                };
-            }
-        });
+        soonReadyContracts.map(checkSoonReadyContract);
         $scope.isReadyContract = !!readyContracts.length;
         soonReadyContracts = soonReadyContracts.filter(function(contract) {
             return contract.soonReady;
@@ -244,15 +279,13 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         soonReadyTimer = $interval(checkSoonReadyTimer, 250);
     };
 
-
-
-
     $scope.sendTransaction = function() {
         jouleService.invoke({
             gas: $scope.transactionFormData.gas,
             gasPrice: $scope.transactionFormData.gasPrice,
             from: $scope.selectedWallet.wallet
         }).then(function(response) {
+            if (response.error) return;
             $scope.transactionInProgress = true;
             var transactionHash  = response.result;
             jouleService.checkTransaction(response.result).then(function(response) {
@@ -265,7 +298,8 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
                         $scope.transactionStatusError = true;
                         break;
                     case 1:
-                        // getLastEvents();
+                        $timeout.cancel(checkEventsInterval);
+                        getAllEvents();
                         break;
                 }
             });

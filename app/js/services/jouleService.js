@@ -1,4 +1,5 @@
 angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI, $rootScope, $interval) {
+
     var web3 = new Web3(), contract, _this = this;
     console.log(JOULE_ABI);
     /* Определение провайдеров клиентов */
@@ -175,6 +176,18 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
+    this.register = function(registrant, address, timestamp, gasLimit, gasPrice, amount) {
+        var defer = $q.defer();
+        gasPrice = Web3.utils.toWei(String(gasPrice), 'gwei');
+        contract.methods.register(address, timestamp, gasLimit, gasPrice).send({
+            from: registrant,
+            value: amount
+        }, function(error, result) {
+            defer.resolve({error: error, result: result});
+        });
+        return defer.promise;
+    };
+
     this.registerFor = function(registrant, address, timestamp, gasLimit, gasPrice, amount) {
         var defer = $q.defer();
 
@@ -190,10 +203,10 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
-    this.getAllEvents = function(blockNumber) {
+    this.getAllEvents = function(fromBlock) {
         var defer = $q.defer();
         contract.getPastEvents('allEvents', {
-            fromBlock: blockNumber || JOULE_SETTINGS.FIRST_BLOCK,
+            fromBlock: fromBlock || JOULE_SETTINGS.JOULE.FIRST_BLOCK,
             toBlock: 'latest',
             topics: []
         }, function(error, result) {
@@ -208,7 +221,7 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
     this.getRegisteredContracts = function(userAddress) {
         var defer = $q.defer();
         contract.getPastEvents('Registered', {
-            fromBlock: 2545593,
+            fromBlock: JOULE_SETTINGS.JOULE.FIRST_BLOCK,
             toBlock: 'latest',
             topics: [
                 Web3.utils.sha3("Registered(address,address,uint256,uint256,uint256)"),
@@ -225,7 +238,7 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
     this.getUnregisteredContracts = function(userAddress) {
         var defer = $q.defer();
         contract.getPastEvents('Unregistered', {
-            fromBlock: 2545593,
+            fromBlock: JOULE_SETTINGS.JOULE.FIRST_BLOCK,
             toBlock: 'latest',
             topics: [
                 Web3.utils.sha3("Unregistered(address,address,uint256,uint256,uint256,uint256)"),
@@ -242,7 +255,7 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
 
     this.getPastEvents = function(eventName) {
         return contract.getPastEvents(eventName, {
-            fromBlock: JOULE_SETTINGS.FIRST_BLOCK,
+            fromBlock: JOULE_SETTINGS.JOULE.FIRST_BLOCK,
             toBlock: 'latest',
             topics: [Web3.utils.sha3("Registered(address,address,uint256,uint256,uint256)")]
         }, function(error, result) {
@@ -401,12 +414,6 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         });
         return defer.promise;
     };
-
-    // {name: "_contractAddress", type: "address"}
-    // {name: "_timestamp", type: "uint256"}
-    // {name: "_gasLimit", type: "uint256"}
-    // {name: "_gasPrice", type: "uint256"}
-
 
     this.getNext = function(count, currentRegistration) {
         var defer = $q.defer();

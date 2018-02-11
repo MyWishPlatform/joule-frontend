@@ -205,7 +205,7 @@ angular.module('app').controller('registrationController', function($scope, $tim
 
     $scope.registerContract = function() {
         var gasPrice = $scope.contract.gasPrice;
-        jouleService.registerFor(
+        jouleService.register(
             $scope.contract.registrant,
             $scope.contract.address,
             $scope.contract.start_date_time,
@@ -220,7 +220,6 @@ angular.module('app').controller('registrationController', function($scope, $tim
             var transactionHash = response.result;
             $scope.transactionStatusError = false;
             jouleService.checkTransaction(transactionHash).then(function(response) {
-                console.log(response);
                 $scope.transactionInProgress = false;
                 var result = response.result;
                 var status = Web3.utils.hexToNumber(result.status);
