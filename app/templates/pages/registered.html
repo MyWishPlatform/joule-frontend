@@ -38,7 +38,11 @@
                             <span>Registered</span>
                         </div>
                     </th>
-                    <th>&nbsp;</th>
+                    <th>
+                        <div>
+                            <span>Status</span>
+                        </div>
+                    </th>
                 </tr>
                 </thead>
                 <tbody class="joule-invoke-contracts_table__body">
@@ -61,13 +65,14 @@
                         <span style="white-space: pre">{{contract.blockHashInfo.timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
                     </td>
                     <td class="text-center reward-cell">
-                        <button ng-if="!contract.unregistered && !contract.expired && !contract.transactionInProgress" class="btn btn-icon red-color"
+                        <button ng-if="!contract.unregistered && !contract.expired && !contract.transactionInProgress && !contract.invoked" class="btn btn-icon red-color"
                                 title="Unregister"
                                 ng-click="unregisterContract(contract)">
                             <i class="icon-delete-button"></i>
                         </button>
-                        <span ng-if="contract.unregistered" class="red-color">Unregistered</span>
-                        <span ng-if="contract.expired" class="red-color">Expired</span>
+                        <span ng-if="contract.unregistered" class="red-color">Removed</span>
+                        <span ng-if="contract.invoked" class="ready-color">Called</span>
+                        <span ng-if="contract.expired" class="red-color">Ready for call</span>
 
                         <div ng-if="contract.transactionInProgress">
                             <div class="preloader-container">

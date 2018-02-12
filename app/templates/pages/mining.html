@@ -13,7 +13,7 @@
     </div>
 
 
-    <div class="table-from-blocks base-rounded-section" ng-class="{'with-reward': isReadyContract}">
+    <div class="table-from-blocks base-rounded-section with-reward">
         <div class="table-from-blocks_head base-rounded-section">
             <div class="table-from-blocks_head_th">
                 <span class="cell-content">Contract address</span>
@@ -27,8 +27,8 @@
             <div class="table-from-blocks_head_th">
                 <span class="cell-content">Gas price (GWei)</span>
             </div>
-            <div class="table-from-blocks_head_th reward-cell" ng-if="isReadyContract">
-                <span class="cell-content">Reward (ETH)</span>
+            <div class="table-from-blocks_head_th reward-cell">
+                <span class="cell-content" title="Compensation (ETH)">Compensation</span>
             </div>
         </div>
         <div class="table-from-blocks_content">
@@ -56,7 +56,7 @@
                     <div class="table-from-blocks_body_tr_td">
                         <span class="cell-content">{{contract.gasPrice}}</span>
                     </div>
-                    <div class="table-from-blocks_body_tr_td reward-cell" ng-if="isReadyContract">
+                    <div class="table-from-blocks_body_tr_td reward-cell">
                         <span class="cell-content">{{contract.reward | separateNumber}}</span>
                     </div>
                 </div>
@@ -70,9 +70,9 @@
         <span class="joule-invoke-warning_text">Currently there are no contracts ready for call</span>
     </div>
 
-    <div class="joule-invoke-warning text-right" ng-if="isReadyContract">
+    <!-- div class="joule-invoke-warning text-right" ng-if="isReadyContract">
         <span class="joule-invoke-warning_text">&nbsp;</span>
-    </div>
+    </div --><br/>
     <div class="grid-row" ng-class="{'no-active': !isReadyContract}">
         <div class="grid-cell grid-cell-2-3">
             <div class="grid-row">
@@ -101,9 +101,9 @@
                         <div class="text-field-warning" ng-if="invokeContractForm['gas-price'].$error['min']">Gas price is too small for the call</div>
                     </div>
                 </div>
-                <div class="grid-cell grid-cell-1">
-                    <div class="text-field-warning" ng-if="transactionFormData['gas'] && transactionFormData['gasPrice']">
-                        Предполагаемая прибыль {{supposedAmount}} ETH
+                <div class="grid-cell grid-cell-1"><br/><br/>
+                    <div ng-if="transactionFormData['gas'] && transactionFormData['gasPrice']" class="cost-info">
+                        Planned reward: <span>{{supposedAmount}} ETH</span>
                     </div>
                 </div>
             </div>
@@ -112,7 +112,7 @@
                 <div class="joule-invoke-warning" ng-if="transactionStatusError">
                     <img class="joule-invoke-warning_icon" src="/static/images/exclamation.svg"/>
                     <span class="joule-invoke-warning_text">
-                        Failed: Check on <a ng-attr-href="{{etherscanLink}}tx/{{transactionAddress}}" target="_blank">{{etherscanLink}}tx/{{transactionAddress}}</a>
+                        Failed. Please see details: <a ng-attr-href="{{etherscanLink}}tx/{{transactionAddress}}" target="_blank">{{etherscanLink}}tx/{{transactionAddress}}</a>
                     </span>
                 </div>
 
@@ -126,7 +126,7 @@
                             '&value=0&to=' + contractAddress +
                             '&gaslimit=' + transactionFormData.gas + '#send-transaction'
                         }}" ng-if="selectedWallet.type === 'infura'">
-                        <span>Send</span>
+                        <span>Call</span>
                     </a>
                 </div>
 

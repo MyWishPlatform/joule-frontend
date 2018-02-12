@@ -47,7 +47,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
     };
     iniJouleContractsList();
 
-
     $scope.onSelectWallet = function() {
         iniJouleContractsList();
         setWalletBalance();
@@ -78,9 +77,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         var supposedAmount = rewardAmount.minus(allGas.times(Web3.utils.toWei(String($scope.transactionFormData.gasPrice), 'gwei'))).toString(10);
         $scope.supposedAmount = Web3.utils.fromWei(supposedAmount, 'ether');
     };
-
     var readyContractCheckReward = function(contract) {
-
         $scope.minGasLimit =
             $scope.minGasLimit ? Math.min($scope.minGasLimit, contract.invokeGas) : contract.invokeGas;
 
@@ -91,10 +88,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
         contract.isReady = true;
         $scope.recommendedGas = $scope.transactionFormData.gas;
-
     };
-
-
     var checkContractsReady = function(newRegistrations) {
         var now = (new Date()).getTime();
         var newSoonReadyContracts = newRegistrations.filter(function(contract) {
@@ -106,8 +100,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         });
         soonReadyContracts = soonReadyContracts.concat(newSoonReadyContracts);
     };
-
-
     var updateRegistrationsList = function(registration, count) {
         var index = $scope.contractsInfo.data.indexOf(registration);
         jouleService.getNext(count, registration).then(function(response) {
@@ -117,9 +109,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             $scope.contractsInfo.data = part1.concat(response.result, part2);
         });
     };
-
     var addNewRegistrations = function(registeredList) {
-
         /* Добавлены в начало списка */
         var newRegisteredOnBegin = registeredList.filter(function(event) {
             return event.returnValues._timestamp * 1000 < $scope.contractsInfo.data[0].timestamp;
@@ -156,7 +146,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
         /* Добавлены в конец списка */
         if (registeredList.length) {
-
             jouleService.getNext(registeredList.length, $scope.contractsInfo.data[$scope.contractsInfo.data.length - 1]).then(function(response) {
                 if (!(response.result && response.result.length)) return;
                 response.result = response.result.filter(function(nextRegistration) {
@@ -169,22 +158,23 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             });
         }
     };
-
     var checkRegistrationsList = function(eventsList) {
-
         var registeredList = eventsList.filter(function(event) {
             return (event.event === 'Registered') && ($scope.contractsInfo.data.filter(function(registration) {
                     return !((registration.address === event.returnValues._address) && (registration.timestamp === event.returnValues._timestamp))
                 }));
         });
-
         var invokedList = eventsList.filter(function(event) {
             return event.event === 'Invoked';
         });
+
+        checkUnregisteredRegistrations(eventsList.filter(function(event) {
+            return event.event === 'Unregistered';
+        }));
+
         invokedList = invokedList.filter(function(event) {
             return event.returnValues._status;
         });
-
         if (invokedList.length) {
             if (registeredList.length) {
                 jouleService.getContractsList(1).then(function(contractsList) {
@@ -211,6 +201,22 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
     var oldTransactionsList = [];
     var checkEventsInterval;
 
+    var checkUnregisteredRegistrations = function(events) {
+        events.map(function(event) {
+            var unregisteredContract = $scope.contractsInfo.data.filter(function(registration) {
+                return (event.returnValues._address === registration.address) && (event.returnValues._timestamp * 1000 === registration.timestamp)
+            });
+            var indexOfRegistration = $scope.contractsInfo.data.indexOf(unregisteredContract);
+            if (indexOfRegistration === -1) return;
+            if (indexOfRegistration === 0) {
+
+                return;
+            }
+
+        });
+
+    };
+
     var getAllEvents = function() {
         jouleService.getAllEvents(lastTransactionBlock).then(function(response) {
             checkNextEvents();
@@ -228,7 +234,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
     var checkNextEvents = function() {
         checkEventsInterval = $timeout(getAllEvents, 10000);
     };
-
     var checkSoonReadyContract = function(contract) {
         if ((contract.timestamp <= $scope.nowTime) && !contract.isReady) {
             contract.soonReady = false;
@@ -285,7 +290,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         soonReadyTimer ? $interval.cancel(soonReadyTimer) : false;
         soonReadyTimer = $interval(checkSoonReadyTimer, 250);
     };
-
     $scope.sendTransaction = function() {
         jouleService.invoke({
             gas: $scope.transactionFormData.gas,
@@ -327,7 +331,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             jouleService.getNext(newRegistrationsCount, $scope.contractsInfo.data[$scope.contractsInfo.data.length - 1]).then(function(response) {
                 if (!(response.result && response.result.length)) return;
                 response.result = response.result.slice(0);
-                console.log(response.result);
                 checkContractsReady(response.result);
                 $scope.contractsInfo.data = $scope.contractsInfo.data.concat(response.result);
                 getNextProgress = false;
@@ -344,6 +347,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
     $scope.$on('$destroy', function() {
         soonReadyTimer ? $interval.cancel(soonReadyTimer) : false;
+        checkEventsInterval ? $timeout.cancel(checkEventsInterval) : false;
     });
 
 

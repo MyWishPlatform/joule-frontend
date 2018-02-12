@@ -1,4 +1,5 @@
-angular.module('app').controller('registeredController', function($scope, walletsList, jouleService, JOULE_ABI) {
+angular.module('app').controller('registeredController', function($scope, walletsList, jouleService) {
+
 
     $scope.pageContent = {
         wallets: [{
@@ -53,13 +54,26 @@ angular.module('app').controller('registeredController', function($scope, wallet
                     transaction.blockHashInfo = blockHashInfo;
                 });
             });
+
+
+
             getUnregisteredContracts(response.result, function() {
-                response.result.map(function(transaction) {
-                    if ((!transaction.unregistered) && (transaction.returnValues._timestamp * 1000 < (new Date()).getTime())) {
+                jouleService.getContractsList(1).then(function(list) {
+                    var firstActiveRegistration = list[0];
+
+                    response.result.filter(function(contract) {
+                        return ((contract.returnValues._timestamp * 1000) < firstActiveRegistration.timestamp) && !contract.unregistered;
+                    }).map(function(contract) {
+                        contract.invoked = true;
+                    });
+
+                    response.result.filter(function(contract) {
+                        return ((contract.returnValues._timestamp * 1000) < (new Date()).getTime()) && !contract.invoked && !contract.unregistered;
+                    }).map(function(transaction) {
                         transaction.expired = true;
-                    }
+                    });
+                    $scope.contractsList = response.result;
                 });
-                $scope.contractsList = response.result;
             });
         });
     };
