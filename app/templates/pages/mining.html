@@ -12,99 +12,58 @@
         <b>Balance: </b>{{selectedWallet.balance}} ETH
     </div>
 
-    <div class="joule-invoke-contracts_container">
-        <div class="joule-invoke-contracts">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="joule-invoke-contracts_table">
-                <thead class="joule-invoke-contracts_table__head">
-                <tr>
-                    <th>
-                        <div>
-                            <span>Contract address</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Invoke date/time</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Gas limit</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Gas price (GWei)</span>
-                        </div>
-                    </th>
-                    <th ng-if="isReadyContract" class="reward-cell">
-                        <div>
-                            <span>Reward (ETH)</span>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-                <tbody class="joule-invoke-contracts_table__body">
-                <tr ng-repeat="contract in contractsInfo.data">
-                    <td>
-                        <a class="contract-address"
+
+    <div class="table-from-blocks base-rounded-section" ng-class="{'with-reward': isReadyContract}">
+        <div class="table-from-blocks_head base-rounded-section">
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Contract address</span>
+            </div>
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Invoke date/time</span>
+            </div>
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Gas limit</span>
+            </div>
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Gas price (GWei)</span>
+            </div>
+            <div class="table-from-blocks_head_th reward-cell" ng-if="isReadyContract">
+                <span class="cell-content">Reward (ETH)</span>
+            </div>
+        </div>
+        <div class="table-from-blocks_content">
+            <div class="table-from-blocks_body" ng-scroll-list="registrationsListOptions">
+                <div ng-repeat="contract in contractsInfo.data" class="table-from-blocks_body_tr">
+                    <div class="table-from-blocks_body_tr_td">
+                        <a class="contract-address cell-content"
                            ng-attr-title="{{contract.address}}"
                            target="blank"
                            ng-attr-href="https://ropsten.etherscan.io/address/{{contract.address}}">{{contract.address}}</a>
-                    </td>
-                    <td>
-                        <span ng-if="contract.isReady" class="ready-color" ng-attr-title="{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}">Ready</span>
-                        <span ng-if="contract.soonReady" class="soon-ready-color"
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span ng-if="contract.isReady" class="ready-color cell-content" ng-attr-title="{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}">Ready</span>
+                        <span ng-if="contract.soonReady" class="soon-ready-color cell-content"
                               ng-attr-title="{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}"
                               ng-init="time = contract.rightTime">
-                            <img class="soon-ready-icon" src="/static/images/clock.svg"/>
-                            {{contract.rightTime.hours}}:{{contract.rightTime.minutes}}:{{contract.rightTime.seconds}}<br/>
-                        </span>
-                        <span ng-if="!(contract.isReady || contract.soonReady)">{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}</span>
-                    </td>
-                    <td><span>{{contract.invokeGas | separateNumber}}</span></td>
-                    <td><span>{{contract.gasPrice}}</span></td>
-                    <td ng-if="isReadyContract" class="reward-cell"><span>{{contract.reward | separateNumber}}</span></td>
-                </tr>
-                </tbody>
-            </table>
+                                <img class="soon-ready-icon" src="/static/images/clock.svg"/>
+                                {{contract.rightTime.hours}}:{{contract.rightTime.minutes}}:{{contract.rightTime.seconds}}<br/>
+                            </span>
+                        <span ng-if="!(contract.isReady || contract.soonReady)" class="cell-content">{{contract.timestamp | date : 'yyyy-MM-dd / HH:mm'}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span class="cell-content">{{contract.invokeGas | separateNumber}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span class="cell-content">{{contract.gasPrice}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td reward-cell" ng-if="isReadyContract">
+                        <span class="cell-content">{{contract.reward | separateNumber}}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!--<ul class="invoke-table-pagination">-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<span class="invoke-table-pagination_item_link no_active">-->
-                <!--<i class="icon-keyboard_arrow_left"></i>-->
-            <!--</span>-->
-        <!--</li>-->
-
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link active" href="#">1</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">2</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">3</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">4</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">5</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">6</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">7</a>-->
-        <!--</li>-->
-        <!--<li class="invoke-table-pagination_item">-->
-            <!--<a class="invoke-table-pagination_item_link" href="#">-->
-                <!--<i class="icon-keyboard_arrow_right"></i>-->
-            <!--</a>-->
-        <!--</li>-->
-    <!--</ul>-->
 
     <div class="joule-invoke-warning text-right" ng-if="!isReadyContract">
         <img class="joule-invoke-warning_icon" src="/static/images/exclamation.svg"/>

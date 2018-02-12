@@ -354,10 +354,15 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
         return defer.promise;
     };
 
-    this.getContractsCount = function() {
-        contract.methods.getCount().call(function() {
-
+    this.getCount = function() {
+        var defer = $q.defer();
+        contract.methods.getCount().call(function(error, result) {
+            defer.resolve({
+                error: error,
+                result: result
+            });
         });
+        return defer.promise;
     };
     var checkTransaction = function(transactionHash, callback) {
         try {

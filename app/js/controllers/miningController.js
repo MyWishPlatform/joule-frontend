@@ -1,5 +1,8 @@
 angular.module('app').controller('miningController', function($scope, $timeout, $interval, jouleService, walletsList, invokeSignature, $state) {
 
+
+    var getItemsLength = 15;
+
     $scope.pageContent = {
         wallets: [{
             type: 'infura',
@@ -38,7 +41,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         jouleService.setProviderForWallet($scope.selectedWallet);
         jouleService.getBlockNumber().then(function(block) {
             lastTransactionBlock = block;
-            jouleService.getContractsList(15).then(checkJouleContracts);
+            jouleService.getContractsList(getItemsLength).then(checkJouleContracts);
         });
 
     };
@@ -104,6 +107,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         soonReadyContracts = soonReadyContracts.concat(newSoonReadyContracts);
     };
 
+
     var updateRegistrationsList = function(registration, count) {
         var index = $scope.contractsInfo.data.indexOf(registration);
         jouleService.getNext(count, registration).then(function(response) {
@@ -152,13 +156,16 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
         /* Добавлены в конец списка */
         if (registeredList.length) {
-            jouleService.getNext(1, $scope.contractsInfo.data[$scope.contractsInfo.data.length - 1]).then(function(response) {
-                var nextRegistration = response.result[0];
-                if (nextRegistration && (registeredList.filter(function(event) {
-                    return (event.returnValues._address === nextRegistration.address) && (event.returnValues._timestamp * 1000 === nextRegistration.timestamp)
-                    }).length)) {
-                    updateRegistrationsList($scope.contractsInfo.data[$scope.contractsInfo.data.length - 1], registeredList.length);
-                }
+
+            jouleService.getNext(registeredList.length, $scope.contractsInfo.data[$scope.contractsInfo.data.length - 1]).then(function(response) {
+                if (!(response.result && response.result.length)) return;
+                response.result = response.result.filter(function(nextRegistration) {
+                    return registeredList.filter(function(event) {
+                        return (event.returnValues._timestamp * 1000 === nextRegistration.timestamp) && (event.returnValues._address === nextRegistration.address)
+                    }).length;
+                });
+                checkContractsReady(response.result);
+                $scope.contractsInfo.data = $scope.contractsInfo.data.concat(response.result);
             });
         }
     };
@@ -300,10 +307,39 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
                     case 1:
                         $timeout.cancel(checkEventsInterval);
                         getAllEvents();
+                        setWalletBalance();
                         break;
                 }
             });
         });
+    };
+
+    var getNextProgress = false;
+    var getNextRegistrationsList = function() {
+        if (getNextProgress) return;
+        getNextProgress = true;
+        jouleService.getCount().then(function(response) {
+            if (response.error) return;
+            var newRegistrationsCount = Math.min(getItemsLength, response.result - $scope.contractsInfo.data.length);
+            if (!newRegistrationsCount) {
+                return;
+            }
+            jouleService.getNext(newRegistrationsCount, $scope.contractsInfo.data[$scope.contractsInfo.data.length - 1]).then(function(response) {
+                if (!(response.result && response.result.length)) return;
+                response.result = response.result.slice(0);
+                console.log(response.result);
+                checkContractsReady(response.result);
+                $scope.contractsInfo.data = $scope.contractsInfo.data.concat(response.result);
+                getNextProgress = false;
+            });
+        });
+
+    };
+
+    $scope.registrationsListOptions = {
+        parent: '.table-from-blocks_content',
+        updater: getNextRegistrationsList,
+        offset: 20
     };
 
     $scope.$on('$destroy', function() {
