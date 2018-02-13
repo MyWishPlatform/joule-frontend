@@ -142,7 +142,7 @@ angular.module('app').controller('registrationController', function($scope, $tim
                     $scope.addressIsError = false;
                     $scope.checkContractAddress = true;
                 }
-                $scope.contract.gasLimit = result.result;
+                $scope.contract.gasLimit = Math.min(result.result, 4000000);
                 $scope.checkRegistrationAmount();
             });
         };
@@ -179,14 +179,14 @@ angular.module('app').controller('registrationController', function($scope, $tim
         validGasSettings = true;
         var gasPrice = Web3.utils.toWei(String($scope.contract.gasPrice), 'gwei');
 
-        var methodInterface = jouleService.getMethodInterface('registerFor');
+        var methodInterface = jouleService.getMethodInterface('register');
 
         $scope.registerSignature = (new Web3).eth.abi.encodeFunctionCall({
             name: methodInterface.name,
             type: methodInterface.type,
             inputs: methodInterface.inputs
         }, [
-            $scope.contract.registrant,
+            // $scope.contract.registrant,
             $scope.contract.address,
             $scope.contract.start_date_time,
             $scope.contract.gasLimit,
@@ -194,7 +194,7 @@ angular.module('app').controller('registrationController', function($scope, $tim
         ]);
 
         jouleService.getContractPrice($scope.contract.gasLimit, gasPrice).then(function(result) {
-            if (validGasSettings) {
+            if (validGasSettings && result) {
                 $scope.checkRegistrationInfo = {
                     amount: Web3.utils.fromWei(String(result), 'ether')
                 };

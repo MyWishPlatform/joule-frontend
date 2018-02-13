@@ -13,7 +13,8 @@ module.directive('ngScrolledBlock', function($timeout) {
     return {
         'restrict': 'A',
         'scope': {
-            ngScrolledBlock: '=?ngScrolledBlock'
+            ngScrolledBlock: '=?ngScrolledBlock',
+            ngScrollList: '=?ngScrollListParams'
         },
         'link': function ($scope, element) {
             var win = angular.element(window);
@@ -33,6 +34,24 @@ module.directive('ngScrolledBlock', function($timeout) {
             }).appendTo(container);
             element.before(container);
             scrolledContainer.append(element);
+
+            var elementScrolled;
+
+            var onScroll = function() {
+                var currentBottomPosition = element.offset()['top'] + element.outerHeight();
+                if (!$scope.ngScrollList.parent) {
+                    currentBottomPosition = currentBottomPosition - elementScrolled.scrollTop() - elementScrolled.height();
+                    if (currentBottomPosition < $scope.ngScrollList.offset) {
+                        $scope.ngScrollList.updater ? $scope.ngScrollList.updater() : false;
+                    }
+                } else {
+                    var parentBottomPosition = elementScrolled.offset()['top'] + elementScrolled.outerHeight();
+                    if ((currentBottomPosition - parentBottomPosition) < $scope.ngScrollList.offset) {
+                        $scope.ngScrollList.updater ? $scope.ngScrollList.updater() : false;
+                    }
+                }
+            };
+
 
             var mouseWheelScrolledBlock = function (e) {
                 var event = e.originalEvent;
@@ -59,16 +78,28 @@ module.directive('ngScrolledBlock', function($timeout) {
             };
             scrolledContainer.on('scroll', onChangeScroll);
 
+
+            if ($scope.ngScrollList) {
+                elementScrolled =
+                    scrolledContainer;
+
+                elementScrolled.on('scroll', onScroll);
+                $scope.$on('$destroy', function() {
+                    elementScrolled.off('scroll', onScroll);
+                });
+            }
+
             var iniRangeLine = function () {
                 defaultParams.listHeight = element.outerHeight();
                 defaultParams.containerHeight = container.outerHeight();
                 defaultParams.scrollHeight = scrollLine.height();
                 defaultParams.percentsHeight = Math.min(defaultParams.maxHeight / defaultParams.listHeight * 100, 100);
                 scrollRanger.height(defaultParams.percentsHeight + '%');
+                onChangeScroll();
             };
 
             var heightScrollBlockIni = function() {
-                defaultParams.maxHeight = 300; //defaultParams.children.first().outerHeight() * defaultParams.itemsCount;
+                defaultParams.maxHeight = defaultParams.maxHeight || 300; //defaultParams.children.first().outerHeight() * defaultParams.itemsCount;
                 if (defaultParams['showed']) {
                     scrolledContainer.scrollTop(oldScroll);
                 }
@@ -117,8 +148,8 @@ module.directive('ngScrolledBlock', function($timeout) {
             /** Watchers of scope params **/
 
             $scope.$watch('ngScrolledBlock.watcher', function() {
-                oldScroll = 0;
-                heightScrollBlockIni();
+                // oldScroll = 0;
+                $timeout(heightScrollBlockIni);
             });
 
             var startClientY = 0, scrollPosition;

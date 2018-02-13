@@ -1,4 +1,4 @@
-angular.module('app').controller('registeredController', function($scope, walletsList, jouleService) {
+angular.module('app').controller('registeredController', function($scope, walletsList, jouleService, $timeout) {
 
 
     $scope.pageContent = {
@@ -43,6 +43,7 @@ angular.module('app').controller('registeredController', function($scope, wallet
         });
     };
 
+    $scope.showScrollParams = {};
     var getRegisteredContracts = function() {
         jouleService.getRegisteredContracts($scope.selectedWallet.wallet).then(function(response) {
             if (response.error) {
@@ -54,8 +55,6 @@ angular.module('app').controller('registeredController', function($scope, wallet
                     transaction.blockHashInfo = blockHashInfo;
                 });
             });
-
-
 
             getUnregisteredContracts(response.result, function() {
                 jouleService.getContractsList(1).then(function(list) {
@@ -73,15 +72,16 @@ angular.module('app').controller('registeredController', function($scope, wallet
                         transaction.expired = true;
                     });
                     $scope.contractsList = response.result;
+                    $scope.showScrollParams.watcher = true;
                 });
             });
         });
     };
+
     getRegisteredContracts();
 
     $scope.unregisterContract = function(contract) {
         jouleService.unregisterContract(contract).then(function(response) {
-            console.log(response);
             if (response.error) return;
             contract.transactionInProgress = true;
             $scope.transactionStatusError = false;

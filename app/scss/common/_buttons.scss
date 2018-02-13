@@ -43,8 +43,20 @@
     background-color: transparent;
     border: 1px solid transparent;
     padding: 0.5em;
+    white-space: nowrap;
+    &.without-padding {
+      padding: 0;
+      margin: 0;
+    }
     i {
       font-size: 2em;
+      vertical-align: middle;
+      margin-right: 0.25em;
+    }
+    span {
+      font-size: 1.4em;
+      font-weight: normal;
+      vertical-align: middle;
     }
   }
 

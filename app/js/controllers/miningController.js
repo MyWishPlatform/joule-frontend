@@ -31,14 +31,20 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         $scope.selectedWallet = $scope.pageContent.wallets[0];
     }
 
+
     var checkJouleContracts = function(contractsList) {
+        // contractsList = contractsList.filter(function(item) {
+        //     return item.timestamp != 0;
+        // });
         $scope.contractsInfo.data = contractsList;
+        getNextProgress = false;
         checkReadyContracts();
         checkNextEvents();
     };
 
     var iniJouleContractsList = function() {
         jouleService.setProviderForWallet($scope.selectedWallet);
+        $scope.contractsInfo.data = [];
         jouleService.getBlockNumber().then(function(block) {
             lastTransactionBlock = block;
             jouleService.getContractsList(getItemsLength).then(checkJouleContracts);
@@ -84,7 +90,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         $scope.transactionFormData.gas =
             ($scope.transactionFormData.gas || 0) + contract.invokeGas * 1;
         $scope.transactionFormData.gasPrice =
-            $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, contract.gasPrice) : contract.gasPrice;
+            $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, Math.ceil(contract.gasPrice / 3 * 2)) : contract.gasPrice / 3 * 2;
 
         contract.isReady = true;
         $scope.recommendedGas = $scope.transactionFormData.gas;
@@ -129,7 +135,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
 
         /* Добавлены в середину списка */
         while (registeredList.length && (index < $scope.contractsInfo.data.length)) {
-            if (!registeredList.length) return;
             var getNewRegistrations = registeredList.filter(function(registration) {
                 return registration.returnValues._timestamp * 1000 < $scope.contractsInfo.data[index].timestamp;
             });
@@ -205,14 +210,32 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         events.map(function(event) {
             var unregisteredContract = $scope.contractsInfo.data.filter(function(registration) {
                 return (event.returnValues._address === registration.address) && (event.returnValues._timestamp * 1000 === registration.timestamp)
-            });
+            })[0];
             var indexOfRegistration = $scope.contractsInfo.data.indexOf(unregisteredContract);
+
             if (indexOfRegistration === -1) return;
             if (indexOfRegistration === 0) {
-
+                jouleService.getContractsList(5).then(function(response) {
+                    if (!response) return;
+                    var currentUnregisteredContract = response.filter(function(registration) {
+                        return (unregisteredContract.address === registration.address) && (unregisteredContract.timestamp === registration.timestamp)
+                    })[0];
+                    if (currentUnregisteredContract) {
+                        angular.extend(unregisteredContract, currentUnregisteredContract);
+                    }
+                });
                 return;
             }
-
+            jouleService.getNext(5, $scope.contractsInfo.data[indexOfRegistration - 1]).then(function(response) {
+                if (response.error) return;
+                var currentUnregisteredContract = response.result.filter(function(registration) {
+                    return (unregisteredContract.address === registration.address) && (unregisteredContract.timestamp === registration.timestamp)
+                })[0];
+                if (currentUnregisteredContract) {
+                    angular.extend(unregisteredContract, currentUnregisteredContract);
+                }
+                console.log(unregisteredContract);
+            });
         });
 
     };

@@ -8,85 +8,82 @@
          ng-select-options="{class: 'select-1', label: 'wallet', icon: 'type', iconPath: '/static/images/web3-clients/'}"></div>
 
 
-    <div class="joule-invoke-contracts_container">
-        <div class="joule-invoke-contracts">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" class="joule-invoke-contracts_table">
-                <thead class="joule-invoke-contracts_table__head">
-                <tr>
-                    <th>
-                        <div>
-                            <span>Contract address</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Invoke date/time</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Gas limit</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Gas price (GWei)</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Registered</span>
-                        </div>
-                    </th>
-                    <th>
-                        <div>
-                            <span>Status</span>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-                <tbody class="joule-invoke-contracts_table__body">
-                <tr ng-repeat="contract in contractsList">
-                    <td>
-                        <a class="contract-address"
+
+    <div class="table-from-blocks base-rounded-section with-status">
+        <div class="table-from-blocks_head base-rounded-section">
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Contract address</span>
+            </div>
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Invoke date/time</span>
+            </div>
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Gas limit</span>
+            </div>
+            <div class="table-from-blocks_head_th">
+                <span class="cell-content">Gas price (GWei)</span>
+            </div>
+            <div class="table-from-blocks_head_th reward-cell">
+                <span class="cell-content">Registered</span>
+            </div>
+            <div class="table-from-blocks_head_th reward-cell">
+                <span class="cell-content">Status</span>
+            </div>
+        </div>
+        <div class="table-from-blocks_content">
+            <div class="table-from-blocks_body"
+                 ng-scrolled-block="{
+                watcher: showScrollParams.watcher,
+                showed: true,
+                maxHeight: 400,
+                itemSelector: '.table-from-blocks_body_tr'
+            }">
+                <div ng-repeat="contract in contractsList" class="table-from-blocks_body_tr">
+                    <div class="table-from-blocks_body_tr_td">
+                        <a class="contract-address cell-content"
+                           ng-attr-title="{{contract.address}}"
                            target="blank"
-                           ng-attr-href="https://ropsten.etherscan.io/address/{{contract.returnValues._address}}">{{contract.returnValues._address}}</a>
-                    </td>
-                    <td>
-                        <span style="white-space: pre">{{contract.returnValues._timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
-                    </td>
-                    <td>
-                        <span>{{contract.returnValues._gasLimit | separateNumber}}</span>
-                    </td>
-                    <td class="text-center">
-                        <span>{{web3Utils.fromWei(contract.returnValues._gasPrice, 'gwei')}}</span>
-                    </td>
-                    <td>
-                        <span style="white-space: pre">{{contract.blockHashInfo.timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
-                    </td>
-                    <td class="text-center reward-cell">
-                        <button ng-if="!contract.unregistered && !contract.expired && !contract.transactionInProgress && !contract.invoked" class="btn btn-icon red-color"
-                                title="Unregister"
+                           ng-attr-href="{{etherscanLink}}address/{{contract.returnValues._address}}">{{contract.returnValues._address}}</a>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span class="cell-content" style="white-space: pre">{{contract.returnValues._timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span class="cell-content">{{contract.returnValues._gasLimit | separateNumber}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span class="cell-content">{{web3Utils.fromWei(contract.returnValues._gasPrice, 'gwei')}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td">
+                        <span class="cell-content">{{contract.blockHashInfo.timestamp * 1000 | date : 'yyyy-MM-dd\nHH:mm'}}</span>
+                    </div>
+                    <div class="table-from-blocks_body_tr_td reward-cell">
+                        <button ng-if="!contract.unregistered && !contract.expired && !contract.transactionInProgress && !contract.invoked"
+                                class="btn btn-icon red-color without-padding"
+                                title="Remove"
                                 ng-click="unregisterContract(contract)">
                             <i class="icon-delete-button"></i>
+                            <span>Remove</span>
                         </button>
-                        <span ng-if="contract.unregistered" class="red-color">Removed</span>
-                        <span ng-if="contract.invoked" class="ready-color">Called</span>
-                        <span ng-if="contract.expired" class="red-color">Ready for call</span>
+                        <div class="cell-content">
+                            <span ng-if="contract.unregistered" class="red-color">Removed</span>
+                            <span ng-if="contract.invoked" class="black-color">Called</span>
+                            <span ng-if="contract.expired" class="ready-color">Ready for call</span>
 
-                        <div ng-if="contract.transactionInProgress">
-                            <div class="preloader-container">
-                                <div class="preloader-circle preloader-circle-1 blue-color"></div>
-                                <div class="preloader-circle preloader-circle-2 blue-color"></div>
-                                <div class="preloader-circle preloader-circle-3 blue-color"></div>
+                            <div ng-if="contract.transactionInProgress">
+                                <div class="preloader-container">
+                                    <div class="preloader-circle preloader-circle-1 blue-color"></div>
+                                    <div class="preloader-circle preloader-circle-2 blue-color"></div>
+                                    <div class="preloader-circle preloader-circle-3 blue-color"></div>
+                                </div>
                             </div>
                         </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
     <br/><br/>
     <a ui-sref="main.registration" class="btn submit-btn" type="submit">
         <span>Register a contract</span>
