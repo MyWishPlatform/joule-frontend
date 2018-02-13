@@ -11,7 +11,7 @@ module.controller('mainMenuController', function($scope) {
 
 }).controller('baseController', function($scope, $rootScope) {
 
-}).run(function($rootScope, $state, $location, APP_CONSTANTS) {
+}).run(function($rootScope, $state, $location, APP_CONSTANTS, JOULE_SETTINGS) {
 
     $rootScope.bigNumber = function(val) {
         return new BigNumber(val);
@@ -24,6 +24,7 @@ module.controller('mainMenuController', function($scope) {
     };
 
     $rootScope.etherscanLink = APP_CONSTANTS.ETHERSCAN_LINK;
+    $rootScope.jouleAddress = JOULE_SETTINGS.JOULE.JOULE_ADDRESS;
 
     var offset = moment().utcOffset() / 60;
     $rootScope.currentTimezone = (offset > 0 ? '+' : '') + offset;

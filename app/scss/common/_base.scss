@@ -91,3 +91,19 @@ a {
     color: #fff;
   }
 }
+
+.joule-sources {
+  font-size: 2em;
+  color: #fff;
+  white-space: nowrap;
+  padding: 0.5em;
+  a {
+    color: inherit;
+    text-decoration: none;
+    display: inline-block;
+    vertical-align: middle;
+    + a {
+      margin-left: 0.5em;
+    }
+  }
+}
