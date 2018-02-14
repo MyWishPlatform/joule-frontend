@@ -57,7 +57,7 @@
         </div>
         <div class="float-right joule-sources">
             <a ng-attr-href="{{etherscanLink}}address/{{jouleAddress}}" target="_blank"><i class="icon-lg"><span class="path1"></span><span class="path2"></span></i></a>
-            <a ng-if="version" ng-attr-href="https://github.com/MyWishPlatform/joule/tree/{{bigNumber(version.gitHash).toString(16)}}" target="_blank"><i class="icon-github"></i></a>
+            <a ng-if="version" ng-attr-href="https://github.com/MyWishPlatform/joule/tree/{{version.gitHash.substr(3)}}" target="_blank"><i class="icon-github"></i></a>
         </div>
     </header>
     <nav class="main-menu">

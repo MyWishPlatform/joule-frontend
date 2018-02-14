@@ -1,7 +1,7 @@
 angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, JOULE_ABI, $rootScope, $interval) {
 
     var web3 = new Web3(), contract, _this = this;
-    console.log(JOULE_ABI);
+
     /* Определение провайдеров клиентов */
     var web3Providers = {};
     var createWeb3Providers = function() {
@@ -17,8 +17,8 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
             console.log('Parity not found');
         }
         try {
-            // web3Providers['infura'] = new Web3.providers.HttpProvider("https://mainnet.infura.io/MEDIUMTUTORIAL");
-            web3Providers['infura'] = new Web3.providers.HttpProvider("https://ropsten.infura.io/MEDIUMTUTORIAL");
+            web3Providers['infura'] = new Web3.providers.HttpProvider("https://mainnet.infura.io/MEDIUMTUTORIAL");
+            // web3Providers['infura'] = new Web3.providers.HttpProvider("https://ropsten.infura.io/MEDIUMTUTORIAL");
         } catch(err) {
             console.log('Infura not found');
         }

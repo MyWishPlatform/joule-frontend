@@ -136,11 +136,9 @@ angular.module('app').controller('registrationController', function($scope, $tim
             if (!$scope.contract.address) return;
             jouleService.getEstimateGas($scope.contract.address).then(function(result) {
                 if (result.error) {
-                    $scope.addressIsError = true;
-                    $scope.checkContractAddress = false;
+                    $scope.estimateGasIsError = true;
                 } else {
-                    $scope.addressIsError = false;
-                    $scope.checkContractAddress = true;
+                    $scope.estimateGasIsError = false;
                 }
                 $scope.contract.gasLimit = Math.min(result.result, 4000000);
                 $scope.checkRegistrationAmount();

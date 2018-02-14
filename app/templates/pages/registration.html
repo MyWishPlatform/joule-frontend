@@ -25,6 +25,7 @@
                            ng-change="checkEstimateGas()"
                            class="text-field" required>
                     <span class="field-error" ng-if="addressIsError">Wrong contract address</span>
+                    <span class="field-error" ng-if="!addressIsError && estimateGasIsError">Contract invocation was failed. Impossible to detect required gas</span>
                 </div>
             </div>
             <div class="grid-cell grid-cell-1-3 grid-cell-ps-4-5 grid-cell-ls-1 form-control-description">

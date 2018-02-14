@@ -78,17 +78,17 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
             }
             index++;
         }
-
         $scope.isRewardAmount = rewardAmount > 0;
         var supposedAmount = rewardAmount.minus(allGas.times(Web3.utils.toWei(String($scope.transactionFormData.gasPrice), 'gwei'))).toString(10);
         $scope.supposedAmount = Web3.utils.fromWei(supposedAmount, 'ether');
     };
+
     var readyContractCheckReward = function(contract) {
         $scope.minGasLimit =
             $scope.minGasLimit ? Math.min($scope.minGasLimit, contract.invokeGas) : contract.invokeGas;
 
         $scope.transactionFormData.gas =
-            ($scope.transactionFormData.gas || 0) + contract.invokeGas * 1;
+            ($scope.transactionFormData.gas || 0) * 1 + contract.invokeGas * 1;
         $scope.transactionFormData.gasPrice =
             $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, Math.ceil(contract.gasPrice / 3 * 2)) : contract.gasPrice / 3 * 2;
 
