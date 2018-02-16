@@ -77,6 +77,7 @@ angular.module('Services').service('jouleService', function($q, JOULE_SETTINGS, 
             result['addresses'].map(function(addr, index) {
                 var gasLimit = result['gasLimits'][index];
                 var gasPrice = result['gasPrices'][index];
+
                 var contractInfo = {
                     address: result['addresses'][index],
                     gasPriceWei: gasPrice,

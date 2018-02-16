@@ -90,7 +90,7 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
         $scope.transactionFormData.gas =
             ($scope.transactionFormData.gas || 0) * 1 + contract.invokeGas * 1;
         $scope.transactionFormData.gasPrice =
-            $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, Math.ceil(contract.gasPrice / 3 * 2)) : contract.gasPrice / 3 * 2;
+            $scope.transactionFormData.gasPrice ? Math.min($scope.transactionFormData.gasPrice, Math.ceil(contract.gasPrice / 3 * 2)) : Math.ceil(contract.gasPrice / 3 * 2);
 
         contract.isReady = true;
         $scope.recommendedGas = $scope.transactionFormData.gas;
@@ -234,7 +234,6 @@ angular.module('app').controller('miningController', function($scope, $timeout, 
                 if (currentUnregisteredContract) {
                     angular.extend(unregisteredContract, currentUnregisteredContract);
                 }
-                console.log(unregisteredContract);
             });
         });
 
